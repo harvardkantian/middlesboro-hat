@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: my-django-api
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn marksheet.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13
