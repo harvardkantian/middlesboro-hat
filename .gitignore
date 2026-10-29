@@ -1,5 +1,8 @@
-node_modules
-migrations
-__pycache__
 .DS_Store
+node_modules/
+migrations/
+__pycache__/
+.vscode/
 .env
+# frontend/static/index.js
+frontend/static/index.js
