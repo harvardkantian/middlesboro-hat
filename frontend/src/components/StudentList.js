@@ -511,8 +511,9 @@ const StudentListEditing = ({
                             : current.score
                       }
                       error={
+                        current.score && (
                         current.score > maxMarks &&
-                        !["500", "1000"].includes(current.score) || isNaN(Number(current.score))
+                        !["500", "1000"].includes(current.score) || isNaN(Number(current.score)))
                       }
                       sx={
                         current.score > maxMarks &&
