@@ -8,6 +8,7 @@ import { useSearchParams, useNavigate } from "react-router";
 import StudentList, {
   StudentListConsolidated,
 } from "../components/StudentList";
+import StudentListPE from "../components/StudentListPE";
 
 const Home = () => {
   const classe = useSelector((state) => state.class);
@@ -34,7 +35,7 @@ const Home = () => {
       {role == "Administrator" || subject == "ALL" ? (
         <StudentListConsolidated />
       ) : (
-        <StudentList />
+        <StudentListPE />
       )}
     </>
   );

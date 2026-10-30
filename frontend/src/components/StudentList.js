@@ -22,6 +22,7 @@ import { setMarksheetData } from "../context/slices/marksheetSlice";
 import { setFormatValue } from "../context/slices/formatSlice";
 import SubjectSelectModal from "./SubjectSelectModal";
 import { useNavigate } from "react-router";
+import { StudentListPEEditing, StudentListPEViewing } from "./StudentListPE";
 
 export const StudentListConsolidated_ = ({
   students,
@@ -42,7 +43,6 @@ export const StudentListConsolidated_ = ({
     "AI",
     "IT",
   ];
-
 
   return (
     <>
@@ -130,16 +130,23 @@ export const StudentListConsolidated_ = ({
 
 const subjectMaxMarks = {
   HS: 70,
-  IT:50,
+  IT: 50,
   HC: 50,
   AI: 50,
   Painting: 30,
-  _: 80
-}
+  _: 80,
+};
 
-const StudentListViewing = ({ students, exam, profile, class: classe }) => {
+const StudentListAcademicViewing = ({
+  students,
+  exam,
+  profile,
+  class: classe,
+}) => {
   const profSubject = useSelector((state) => state.subject.subject);
-  const maxMarks = exam.includes("PT") ? 20: (subjectMaxMarks[profSubject] || 80);
+  const maxMarks = exam.includes("PT")
+    ? 20
+    : subjectMaxMarks[profSubject] || 80;
   const passMarks = Math.ceil(maxMarks / 3);
 
   const navigate = useNavigate();
@@ -228,11 +235,17 @@ const StudentListViewing = ({ students, exam, profile, class: classe }) => {
                 {profile.role == "Administrator" || (
                   <TableCell
                     align="left"
-                    sx={{ fontFamily: "Geist Mono, monospace !important", color: student.marks.filter(
-                                    (mark) =>
-                                      mark.exam.abbreviation == exam &&
-                                      mark.subject.sub == profSubject.subject.sub,
-                                  )[0].score < passMarks ? "red" : "black" }}
+                    sx={{
+                      fontFamily: "Geist Mono, monospace !important",
+                      color:
+                        student.marks.filter(
+                          (mark) =>
+                            mark.exam.abbreviation == exam &&
+                            mark.subject.sub == profSubject.subject.sub,
+                        )[0].score < passMarks
+                          ? "red"
+                          : "black",
+                    }}
                   >
                     {/* {console.log("Shacri", exam)}0 */}
                     {exam != "INT" &&
@@ -256,18 +269,18 @@ const StudentListViewing = ({ students, exam, profile, class: classe }) => {
                                 mark.exam.abbreviation == exam &&
                                 mark.subject.sub == profSubject.subject.sub,
                             )[0].score == -1000
-                              ? "N/A"
-                              : student.marks.filter(
-                                    (mark) =>
-                                      mark.exam.abbreviation == exam &&
-                                      mark.subject.sub == profSubject.subject.sub,
-                                  )[0].score == 500
-                              ? "ab"
-                              : student.marks.filter(
-                                    (mark) =>
-                                      mark.exam.abbreviation == exam &&
-                                      mark.subject.sub == profSubject.subject.sub,
-                                  )[0].score}
+                          ? "N/A"
+                          : student.marks.filter(
+                                (mark) =>
+                                  mark.exam.abbreviation == exam &&
+                                  mark.subject.sub == profSubject.subject.sub,
+                              )[0].score == 500
+                            ? "ab"
+                            : student.marks.filter(
+                                (mark) =>
+                                  mark.exam.abbreviation == exam &&
+                                  mark.subject.sub == profSubject.subject.sub,
+                              )[0].score}
                   </TableCell>
                 )}
               </TableRow>
@@ -288,7 +301,7 @@ const StudentListViewing = ({ students, exam, profile, class: classe }) => {
   );
 };
 
-const StudentListEditing = ({
+const StudentListAcademicEditing = ({
   students,
   setStudents,
   setEditing,
@@ -297,9 +310,9 @@ const StudentListEditing = ({
   editing,
   class: classe,
   handleSubmit,
+  profSubject,
 }) => {
   const { request } = useRequest();
-  const profSubject = useSelector((state) => state.subject.subject);
   const maxMarks = subjectMaxMarks[profSubject] || 80;
 
   const navigate = useNavigate();
@@ -391,7 +404,11 @@ const StudentListEditing = ({
   const [alertOpen, setAlertOpen] = useState("");
 
   const saveChanges = async () => {
-    if (Object.values(editedMarks).some((mark) => !Number.isFinite(Number(mark.score)))) {
+    if (
+      Object.values(editedMarks).some(
+        (mark) => !Number.isFinite(Number(mark.score)),
+      )
+    ) {
       setAlertOpen("Enter a valid number for each score.");
       return;
     }
@@ -407,13 +424,17 @@ const StudentListEditing = ({
     console.log(editedMarks);
 
     const errorChanged = Object.entries(editedMarks).filter(
-      ([id, a]) => Number(a.score) > maxMarks && ![500, -500, 1000, -1000].includes(Number(a.score)),
+      ([id, a]) =>
+        Number(a.score) > maxMarks &&
+        ![500, -500, 1000, -1000].includes(Number(a.score)),
     );
 
     console.log(changed, errorChanged, errorChanged.length);
     if (errorChanged.length) {
       console.log("Oi");
-      setAlertOpen("Some marks are above " + maxMarks + ". Check the ones marked in red.");
+      setAlertOpen(
+        "Some marks are above " + maxMarks + ". Check the ones marked in red.",
+      );
       return;
     }
     if (!changed.length) {
@@ -511,9 +532,10 @@ const StudentListEditing = ({
                             : current.score
                       }
                       error={
-                        current.score && (
-                        current.score > maxMarks &&
-                        !["500", "1000"].includes(current.score) || isNaN(Number(current.score)))
+                        current.score &&
+                        ((current.score > maxMarks &&
+                          !["500", "1000"].includes(current.score)) ||
+                          isNaN(Number(current.score)))
                       }
                       sx={
                         current.score > maxMarks &&
@@ -543,6 +565,104 @@ const StudentListEditing = ({
       </Button>
     </>
   );
+};
+
+const StudentListViewing = ({
+  students,
+  setStudents,
+  setEditing,
+  exam,
+  profile,
+  editing,
+  class: classe,
+  handleSubmit,
+}) => {
+  const profSubject = useSelector((state) => state.subject.subject);
+  if (
+    ["PE", "Yoga", "NSS", "MA", "ATL", "WE", "Comp"].includes(
+      profSubject.subject.sub,
+    )
+  )
+    return (
+      <StudentListPEViewing
+        {...{
+          students,
+          setStudents,
+          setEditing,
+          exam,
+          profile,
+          editing,
+          class: classe,
+          handleSubmit,
+          profSubject,
+        }}
+      />
+    );
+  else
+    return (
+      <StudentListAcademicViewing
+        {...{
+          students,
+          setStudents,
+          setEditing,
+          exam,
+          profile,
+          editing,
+          class: classe,
+          handleSubmit,
+          profSubject,
+        }}
+      />
+    );
+};
+
+const StudentListEditing = ({
+  students,
+  setStudents,
+  setEditing,
+  exam,
+  profile,
+  editing,
+  class: classe,
+  handleSubmit,
+}) => {
+  const profSubject = useSelector((state) => state.subject.subject);
+  if (
+    ["PE", "Yoga", "NSS", "MA", "ATL", "WE", "Comp"].includes(
+      profSubject.subject.sub,
+    )
+  )
+    return (
+      <StudentListPEEditing
+        {...{
+          students,
+          setStudents,
+          setEditing,
+          exam,
+          profile,
+          editing,
+          class: classe,
+          handleSubmit,
+          profSubject,
+        }}
+      />
+    );
+  else
+    return (
+      <StudentListAcademicEditing
+        {...{
+          students,
+          setStudents,
+          setEditing,
+          exam,
+          profile,
+          editing,
+          class: classe,
+          handleSubmit,
+          profSubject,
+        }}
+      />
+    );
 };
 
 const StudentList = () => {
@@ -582,7 +702,6 @@ const StudentList = () => {
   useEffect(() => {
     console.log("lion ceccah", editing);
   }, [editing]);
-
   return (
     <div>
       <Button
