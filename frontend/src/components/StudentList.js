@@ -176,7 +176,7 @@ const StudentListViewing = ({ students, exam, profile, class: classe }) => {
               <TableCell align="left">Surname</TableCell>
               <TableCell align="left">First Name</TableCell>
               {profile.role == "Administrator" || (
-                <TableCell align="left">Marks/{subjectMaxMarks[profSubject] || 80}</TableCell>
+                <TableCell align="left">Marks/{maxMarks}</TableCell>
               )}
             </TableRow>
           </TableHead>
