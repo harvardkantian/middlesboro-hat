@@ -78,7 +78,7 @@ export const StudentListConsolidated_ = ({
               ),
             )}
 
-            {students.map((student) => (
+            {students.filter((student) => student.class_div.division === classe).map((student) => (
               <TableRow
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
@@ -748,7 +748,7 @@ export const StudentListConsolidated = () => {
   useEffect(() => {
     (async () => {
       const studentData = (await request("get", "/api/student")).data;
-      let filteredStudentData = [];
+      // let filteredStudentData = [];
       // if (profile?.subjects[0]?.subjects?.sub != "Hi") {
       //   console.log(exam, profile,
       //     studentData.map(
