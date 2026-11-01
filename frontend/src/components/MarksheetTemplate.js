@@ -21,6 +21,10 @@ const subjectMaxMarks = {
   Math: 80, English: 80, Hindi: 80, Sci: 80, French: 80, SS: 80,
   HS: 70, Painting: 30, HC: 50, AI: 50, IT: 50,
 };
+const coScholasticGroups = [
+  { title: "Activities", subjects: ["PE", "Yoga", "NSS", "NCC", "MA"] },
+  { title: "Skills", subjects: ["WE", "ATL", "Comp"] },
+];
 
 const formatMark = (score) => {
   if (score === undefined || score === null || score === "") return "—";
@@ -119,7 +123,32 @@ export default function MarksheetTemplate() {
 
   const isPT = exam.startsWith("PT");
   const isScholasticConsolidated = format === "consolidated" && !isPT;
+  const showCoScholastic = isScholasticConsolidated && exam === "MT";
   const titleSubject = format === "consolidated" ? "Consolidated" : subject;
+
+  const coScholasticScoreFor = (student, sub) => {
+    const matches = student.marks?.filter(
+      (mark) => ["SP", "SE"].includes(mark.exam?.abbreviation) && mark.subject?.sub === sub,
+    );
+    return matches?.find((mark) => mark.exam?.abbreviation === "SP")?.score ??
+      matches?.find((mark) => mark.exam?.abbreviation === "SE")?.score;
+  };
+
+  const formatCoScholasticMark = (score) => {
+    const display = formatMark(score);
+    return display === "—" || ["Ab", "Not done", "N/A"].includes(display)
+      ? display
+      : `${display}/5`;
+  };
+
+  const coScholasticAverage = (student, groupSubjects) => {
+    const validScores = groupSubjects
+      .map((sub) => Number(coScholasticScoreFor(student, sub)))
+      .filter((score) => Number.isFinite(score) && score >= 0 && score <= 5);
+    return validScores.length
+      ? (validScores.reduce((sum, score) => sum + score, 0) / validScores.length).toFixed(2)
+      : "—";
+  };
 
   const renderStudentIdentity = (student) => (
     <>
@@ -139,6 +168,9 @@ export default function MarksheetTemplate() {
           {subjects.map((sub) => (
             <TableCell key={sub} align="center" colSpan={3}>{sub}</TableCell>
           ))}
+          {showCoScholastic && coScholasticGroups.map(({ title, subjects: groupSubjects }) => (
+            <TableCell key={title} align="center" colSpan={groupSubjects.length + 1}>{title}</TableCell>
+          ))}
           <TableCell rowSpan={2} align="center">Total</TableCell>
           <TableCell rowSpan={2} align="center">Percentage</TableCell>
         </TableRow>
@@ -152,11 +184,19 @@ export default function MarksheetTemplate() {
           </>
         )}
         {isScholasticConsolidated ? (
-          subjects.flatMap((sub) => [
-            <TableCell key={`${sub}-raw`} align="center">{sub}/{subjectMaxMarks[sub] || 80}</TableCell>,
-            <TableCell key={`${sub}-100`} align="center">{sub}/100</TableCell>,
-            <TableCell key={`${sub}-grade`} align="center">Grade</TableCell>,
-          ])
+          [
+            ...subjects.flatMap((sub) => [
+              <TableCell key={`${sub}-raw`} align="center">{sub}/{subjectMaxMarks[sub] || 80}</TableCell>,
+              <TableCell key={`${sub}-100`} align="center">{sub}/100</TableCell>,
+              <TableCell key={`${sub}-grade`} align="center">Grade</TableCell>,
+            ]),
+            ...(showCoScholastic ? coScholasticGroups.flatMap(({ title, subjects: groupSubjects }) => [
+              ...groupSubjects.map((sub) => (
+                <TableCell key={`${title}-${sub}`} align="center">{sub}/5</TableCell>
+              )),
+              <TableCell key={`${title}-average`} align="center">Average</TableCell>,
+            ]) : []),
+          ]
         ) : format === "individual" ? (
           isPT ? (
             <TableCell align="center">Marks/20</TableCell>
@@ -221,13 +261,26 @@ export default function MarksheetTemplate() {
             <TableCell key={`${sub}-grade`} align="center">{gradeFromScore(score, max)}</TableCell>,
           ];
         })}
+        {showCoScholastic && coScholasticGroups.flatMap(({ title, subjects: groupSubjects }) => [
+          ...groupSubjects.map((sub) => (
+            <TableCell key={`${title}-${sub}`} align="center">
+              {formatCoScholasticMark(coScholasticScoreFor(student, sub))}
+            </TableCell>
+          )),
+          <TableCell key={`${title}-average`} align="center">
+            {coScholasticAverage(student, groupSubjects)}
+          </TableCell>,
+        ])}
         <TableCell align="center">{total.toFixed(1)}</TableCell>
         <TableCell align="center">{totalPossible ? `${((total / totalPossible) * 100).toFixed(1)}%` : "—"}</TableCell>
       </>
     );
   };
 
-  const columnCount = 3 + (format === "individual" ? (isPT ? 1 : 3) : isPT ? subjects.length : subjects.length * 3 + 2);
+  const coScholasticColumnCount = showCoScholastic
+    ? coScholasticGroups.reduce((total, group) => total + group.subjects.length + 1, 0)
+    : 0;
+  const columnCount = 3 + (format === "individual" ? (isPT ? 1 : 3) : isPT ? subjects.length : subjects.length * 3 + coScholasticColumnCount + 2);
 
   if (isLoading) return <Typography sx={{ p: 2 }}>Loading marksheet…</Typography>;
   if (error) return <Typography color="error" sx={{ p: 2 }}>{String(error)}</Typography>;
