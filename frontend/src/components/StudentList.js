@@ -558,9 +558,11 @@ export const StudentConsolidatedMT = ({
             <TableCell rowSpan={2} align="center">R No</TableCell>
             <TableCell rowSpan={2}>Surname</TableCell>
             <TableCell rowSpan={2}>First Name</TableCell>
-            <TableCell align="center" colSpan={scholasticSubjects.length * 3}>
-              Scholastic
-            </TableCell>
+            {scholasticSubjects.map(({ subject }) => (
+              <TableCell key={subject} align="center" colSpan={3}>
+                {subject}
+              </TableCell>
+            ))}
             {groupedSubjects.map(({ title, subjects }) => (
               <TableCell key={title} align="center" colSpan={subjects.length + 1}>
                 {title}
@@ -569,8 +571,8 @@ export const StudentConsolidatedMT = ({
           </TableRow>
           <TableRow>
             {scholasticSubjects.flatMap(({ subject, max }) => [
-              <TableCell key={`${subject}-raw`} align="center">{subject}/{max}</TableCell>,
-              <TableCell key={`${subject}-100`} align="center">{subject}/100</TableCell>,
+              <TableCell key={`${subject}-raw`} align="center">Marks/{max}</TableCell>,
+              <TableCell key={`${subject}-100`} align="center">Marks/100</TableCell>,
               <TableCell key={`${subject}-grade`} align="center">Grade</TableCell>,
             ])}
             {groupedSubjects.flatMap(({ title, subjects }) => [
