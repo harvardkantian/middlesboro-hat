@@ -24,7 +24,29 @@ import SubjectSelectModal from "./SubjectSelectModal";
 import { useNavigate } from "react-router";
 import { StudentListPEEditing, StudentListPEViewing } from "./StudentListPE";
 
-export const StudentListConsolidated_ = ({
+const GenerateReportButton = ({ exam, classe }) => {
+  const navigate = useNavigate();
+  const query = new URLSearchParams({
+    format: "consolidated",
+    subject: "All",
+    class: classe,
+    exam,
+  });
+
+  return (
+    <Button
+      startIcon={<Newspaper />}
+      sx={{ marginTop: 2 }}
+      variant="contained"
+      color="error"
+      onClick={() => navigate(`/mk-ta?${query.toString()}`)}
+    >
+      Generate Report
+    </Button>
+  );
+};
+
+export const StudentListConsolidatedPT_ = ({
   students,
   exam,
   profile,
@@ -78,52 +100,530 @@ export const StudentListConsolidated_ = ({
               ),
             )}
 
-            {students.filter((student) => student.class_div.division === classe).map((student) => (
-              <TableRow
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell align="center">{student.roll_no}</TableCell>
-                <TableCell align="left">{student.first_name}</TableCell>
-                <TableCell align="left">{student.surname}</TableCell>
-                {console.log(student.marks, "stevavane")}
-                {scholasticSubjects.map((sub) => {
-                  console.log(
-                    student.marks.filter(
+            {students
+              .filter((student) => student.class_div.division === classe)
+              .map((student) => (
+                <TableRow
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                >
+                  <TableCell align="center">{student.roll_no}</TableCell>
+                  <TableCell align="left">{student.first_name}</TableCell>
+                  <TableCell align="left">{student.surname}</TableCell>
+                  {console.log(student.marks, "stevavane")}
+                  {scholasticSubjects.map((sub) => {
+                    console.log(
+                      student.marks.filter(
+                        (mark) =>
+                          mark.exam.abbreviation == exam &&
+                          mark.subject.sub == sub,
+                      ),
+                      "oasises",
+                    );
+                    const score = student.marks.filter(
                       (mark) =>
                         mark.exam.abbreviation == exam &&
                         mark.subject.sub == sub,
-                    ),
-                    "oasises",
-                  );
-                  const score = student.marks.filter(
-                    (mark) =>
-                      mark.exam.abbreviation == exam && mark.subject.sub == sub,
-                  )[0].score;
-                  return (
-                    <TableCell>
-                      {score == 1000
-                        ? "✅"
-                        : score == -1000
-                          ? "N/A"
-                          : score == 500
-                            ? "ab"
-                            : score}
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-            ))}
+                    )[0].score;
+                    return (
+                      <TableCell>
+                        {score == 1000
+                          ? "✅"
+                          : score == -1000
+                            ? "N/A"
+                            : score == 500
+                              ? "ab"
+                              : score}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </TableContainer>
-      <Button
-        startIcon={<Newspaper />}
-        sx={{ marginTop: 2 }}
-        variant="contained"
-        color="error"
-      >
-        Generate Report
-      </Button>
+      <GenerateReportButton exam={exam} classe={classe} />
+    </>
+  );
+};
+const StudentListConsolidatedPB_Legacy = ({
+  students,
+  exam,
+  profile,
+  class: classe,
+}) => {
+  const scholasticSubjects = [
+    "Math",
+    "English",
+    "Hindi",
+    "Sci",
+    "French",
+    "SS",
+    "HS",
+    "Painting",
+    "HC",
+    "AI",
+    "IT",
+  ];
+
+  return (
+    <>
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+          <TableHead>
+            <TableRow>
+              <TableCell align="center">R No</TableCell>
+              <TableCell align="left">Surname</TableCell>
+              <TableCell align="left">First Name</TableCell>
+              <>
+                <TableCell align="left">Math/80</TableCell>
+                <TableCell align="left">Math/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">English/80</TableCell>
+                <TableCell align="left">English/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">Hindi/80</TableCell>
+                <TableCell align="left">Hindi/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">Sci/80</TableCell>
+                <TableCell align="left">Sci/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">French/80</TableCell>
+                <TableCell align="left">French/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">SS/80</TableCell>
+                <TableCell align="left">SS/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">HS/70</TableCell>
+                <TableCell align="left">HS/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">IT/50</TableCell>
+                <TableCell align="left">IT/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">AI/50</TableCell>
+                <TableCell align="left">AI/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">HC/50</TableCell>
+                <TableCell align="left">HC/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">Painting/30</TableCell>
+                <TableCell align="left">Painting/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">Total</TableCell>
+                <TableCell align="left">Percentage</TableCell>
+              </>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {console.log(
+              profile.role,
+              exam,
+              classe,
+              students.filter(
+                (student) => student.class_div.division == classe,
+              ),
+            )}
+
+            {students
+              .filter((student) => student.class_div.division === classe)
+              .map((student) => (
+                <TableRow
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                >
+                  <TableCell align="center">{student.roll_no}</TableCell>
+                  <TableCell align="left">{student.first_name}</TableCell>
+                  <TableCell align="left">{student.surname}</TableCell>
+                  {console.log(student.marks, "stevavane")}
+                  {scholasticSubjects.map((sub) => {
+                    console.log(
+                      student.marks.filter(
+                        (mark) =>
+                          mark.exam.abbreviation == exam &&
+                          mark.subject.sub == sub,
+                      ),
+                      "oasises",
+                    );
+                    const score = student.marks.filter(
+                      (mark) =>
+                        mark.exam.abbreviation == exam &&
+                        mark.subject.sub == sub,
+                    )[0].score;
+                    return (
+                      <>
+                        <TableCell>
+                          {score == 1000
+                            ? "✅"
+                            : score == -1000
+                              ? "N/A"
+                              : score == 500
+                                ? "ab"
+                                : score}
+                        </TableCell>
+                        <TableCell>
+                          {score == 1000
+                            ? "✅"
+                            : score == -1000
+                              ? "N/A"
+                              : score == 500
+                                ? "ab"
+                                : (
+                                    (score * 100) /
+                                    (subjectMaxMarks[sub] || 80)
+                                  ).toFixed(1)}
+                        </TableCell>
+                        <TableCell>L</TableCell>
+                      </>
+                    );
+                  })}
+                  {(() => {
+                    const firstFiveScores = scholasticSubjects
+                      .slice(0, 5)
+                      .map((sub) => {
+                        const score = Number(
+                          student.marks.find(
+                            (mark) =>
+                              mark.exam.abbreviation == exam &&
+                              mark.subject.sub == sub,
+                          )?.score,
+                        );
+                        return Number.isFinite(score) &&
+                          ![500, -500, 1000, -1000].includes(score)
+                          ? (score * 100) / (subjectMaxMarks[sub] || 80)
+                          : 0;
+                      });
+                    const total = firstFiveScores.reduce(
+                      (sum, score) => sum + score,
+                      0,
+                    );
+                    return (
+                      <>
+                        <TableCell>{total.toFixed(1)}</TableCell>
+                        <TableCell>
+                          {((total / 500) * 100).toFixed(1)}%
+                        </TableCell>
+                      </>
+                    );
+                  })()}
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <GenerateReportButton exam={exam} classe={classe} />
+    </>
+  );
+};
+export const StudentListConsolidatedPB_ = ({
+  students,
+  exam,
+  profile,
+  class: classe,
+}) => {
+  const scholasticSubjects = [
+    "Math",
+    "English",
+    "Hindi",
+    "Sci",
+    "French",
+    "SS",
+    "HS",
+    "Painting",
+    "HC",
+    "AI",
+    "IT",
+  ];
+
+  return (
+    <>
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+          <TableHead>
+            <TableRow>
+              <TableCell align="center">R No</TableCell>
+              <TableCell align="left">Surname</TableCell>
+              <TableCell align="left">First Name</TableCell>
+              <>
+                <TableCell align="left">Math/80</TableCell>
+                <TableCell align="left">Math/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">English/80</TableCell>
+                <TableCell align="left">English/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">Hindi/80</TableCell>
+                <TableCell align="left">Hindi/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">Sci/80</TableCell>
+                <TableCell align="left">Sci/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">French/80</TableCell>
+                <TableCell align="left">French/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">SS/80</TableCell>
+                <TableCell align="left">SS/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">HS/70</TableCell>
+                <TableCell align="left">HS/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">IT/50</TableCell>
+                <TableCell align="left">IT/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">AI/50</TableCell>
+                <TableCell align="left">AI/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">HC/50</TableCell>
+                <TableCell align="left">HC/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">Painting/30</TableCell>
+                <TableCell align="left">Painting/100</TableCell>
+                <TableCell align="left">Grade</TableCell>
+                <TableCell align="left">Total</TableCell>
+                <TableCell align="left">Percentage</TableCell>
+              </>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {console.log(
+              profile.role,
+              exam,
+              classe,
+              students.filter(
+                (student) => student.class_div.division == classe,
+              ),
+            )}
+
+            {students
+              .filter((student) => student.class_div.division === classe)
+              .map((student) => (
+                <TableRow 
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                >
+                  <TableCell align="center">{student.roll_no}</TableCell>
+                  <TableCell align="left">{student.first_name}</TableCell>
+                  <TableCell align="left">{student.surname}</TableCell>
+                  {console.log(student.marks, "stevavane")}
+                  {scholasticSubjects.map((sub) => {
+                    console.log(
+                      student.marks.filter(
+                        (mark) =>
+                          mark.exam.abbreviation == exam &&
+                          mark.subject.sub == sub,
+                      ),
+                      "oasises",
+                    );
+                    const score = student.marks.filter(
+                      (mark) =>
+                        mark.exam.abbreviation == exam &&
+                        mark.subject.sub == sub,
+                    )[0].score;
+                    return (
+                      <>
+                        <TableCell>
+                          {score == 1000
+                            ? "✅"
+                            : score == -1000
+                              ? "N/A"
+                              : score == 500
+                                ? "ab"
+                                : score}
+                        </TableCell>
+                        <TableCell>
+                          {score == 1000
+                            ? "✅"
+                            : score == -1000
+                              ? "N/A"
+                              : score == 500
+                                ? "ab"
+                                : (
+                                    (score * 100) /
+                                    (subjectMaxMarks[sub] || 80)
+                                  ).toFixed(1)}
+                        </TableCell>
+                        <TableCell>L</TableCell>
+                      </>
+                    );
+                  })}
+                  {(() => {
+                    const firstFiveScores = scholasticSubjects
+                      .slice(0, 5)
+                      .map((sub) => {
+                        const score = Number(
+                          student.marks.find(
+                            (mark) =>
+                              mark.exam.abbreviation == exam &&
+                              mark.subject.sub == sub,
+                          )?.score,
+                        );
+                        return Number.isFinite(score) &&
+                          ![500, -500, 1000, -1000].includes(score)
+                          ? (score * 100) / (subjectMaxMarks[sub] || 80)
+                          : 0;
+                      });
+                    const total = firstFiveScores.reduce(
+                      (sum, score) => sum + score,
+                      0,
+                    );
+                    return (
+                      <>
+                        <TableCell>{total.toFixed(1)}</TableCell>
+                        <TableCell>
+                          {((total / 500) * 100).toFixed(1)}%
+                        </TableCell>
+                      </>
+                    );
+                  })()}
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <GenerateReportButton exam={exam} classe={classe} />
+    </>
+  );
+};
+
+export const StudentConsolidatedMT = ({
+  students,
+  exam,
+  class: classe,
+}) => {
+  const scholasticSubjects = [
+    { subject: "Math", max: 80 },
+    { subject: "English", max: 80 },
+    { subject: "Hindi", max: 80 },
+    { subject: "Sci", max: 80 },
+    { subject: "French", max: 80 },
+    { subject: "SS", max: 80 },
+    { subject: "HS", max: 70 },
+    { subject: "Painting", max: 30 },
+    { subject: "HC", max: 50 },
+    { subject: "AI", max: 50 },
+    { subject: "IT", max: 50 },
+  ];
+  const groupedSubjects = [
+    { title: "Activities", subjects: ["PE", "Yoga", "NSS", "NCC", "MA"] },
+    { title: "Skills", subjects: ["WE", "ATL", "Comp"] },
+  ];
+  const getScore = (student, subject) =>
+    student.marks?.find(
+      (mark) =>
+        mark.exam?.abbreviation === exam && mark.subject?.sub === subject,
+    )?.score;
+  const getCoScholasticScore = (student, subject) => {
+    const matchingMarks = student.marks?.filter(
+      (mark) =>
+        ["SP", "SE"].includes(mark.exam?.abbreviation) &&
+        mark.subject?.sub === subject,
+    );
+    return (
+      matchingMarks?.find((mark) => mark.exam?.abbreviation === "SP")?.score ??
+      matchingMarks?.find((mark) => mark.exam?.abbreviation === "SE")?.score
+    );
+  };
+  const getGrade = (score, max) => {
+    const numericScore = Number(score);
+    if (!Number.isFinite(numericScore) || numericScore < 0 || numericScore > max) {
+      return "—";
+    }
+    const percentage = (numericScore / max) * 100;
+    if (percentage >= 91) return "A1";
+    if (percentage >= 81) return "A2";
+    if (percentage >= 71) return "B1";
+    if (percentage >= 61) return "B2";
+    if (percentage >= 51) return "C1";
+    if (percentage >= 41) return "C2";
+    if (percentage >= 33) return "D";
+    return "E";
+  };
+  const printableScore = (score, max = 5) => {
+    if (score === undefined || score === null || score === "") return "—";
+    if (Number(score) === 1000) return "✅";
+    if (Number(score) === -1000) return "N/A";
+    if (Number(score) === 500) return "ab";
+    return `${score}/${max}`;
+  };
+  const average = (student, subjects) => {
+    const scores = subjects
+      .map((subject) => Number(getCoScholasticScore(student, subject)))
+      .filter((score) => Number.isFinite(score) && score >= 0 && score <= 5);
+    return scores.length
+      ? (scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(2)
+      : "—";
+  };
+
+  return (
+    <>
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="MT consolidated marks">
+        <TableHead>
+          <TableRow>
+            <TableCell rowSpan={2} align="center">R No</TableCell>
+            <TableCell rowSpan={2}>Surname</TableCell>
+            <TableCell rowSpan={2}>First Name</TableCell>
+            <TableCell align="center" colSpan={scholasticSubjects.length * 3}>
+              Scholastic
+            </TableCell>
+            {groupedSubjects.map(({ title, subjects }) => (
+              <TableCell key={title} align="center" colSpan={subjects.length + 1}>
+                {title}
+              </TableCell>
+            ))}
+          </TableRow>
+          <TableRow>
+            {scholasticSubjects.flatMap(({ subject, max }) => [
+              <TableCell key={`${subject}-raw`} align="center">{subject}/{max}</TableCell>,
+              <TableCell key={`${subject}-100`} align="center">{subject}/100</TableCell>,
+              <TableCell key={`${subject}-grade`} align="center">Grade</TableCell>,
+            ])}
+            {groupedSubjects.flatMap(({ title, subjects }) => [
+              ...subjects.map((subject) => (
+                <TableCell key={`${title}-${subject}`} align="center">{subject}/5</TableCell>
+              )),
+              <TableCell key={`${title}-average`} align="center">Average</TableCell>,
+            ])}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {students
+            .filter((student) => student.class_div?.division === classe)
+            .map((student) => (
+              <TableRow key={student.id ?? student.roll_no}>
+                <TableCell align="center">{student.roll_no}</TableCell>
+                <TableCell>{student.surname}</TableCell>
+                <TableCell>{student.first_name}</TableCell>
+                {scholasticSubjects.flatMap(({ subject, max }) => {
+                  const score = getScore(student, subject);
+                  const numericScore = Number(score);
+                  const hasNumericScore = Number.isFinite(numericScore) && numericScore >= 0 && numericScore <= max;
+                  const percentage = hasNumericScore
+                    ? ((numericScore * 100) / max).toFixed(1)
+                    : printableScore(score, max);
+                  return [
+                    <TableCell key={`${subject}-raw`} align="center">
+                      {printableScore(score, max)}
+                    </TableCell>,
+                    <TableCell key={`${subject}-100`} align="center">
+                      {percentage}
+                    </TableCell>,
+                    <TableCell key={`${subject}-grade`} align="center">
+                      {getGrade(score, max)}
+                    </TableCell>,
+                  ];
+                })}
+                {groupedSubjects.flatMap(({ title, subjects }) => [
+                  ...subjects.map((subject) => (
+                    <TableCell key={`${title}-${subject}`} align="center">
+                      {printableScore(getCoScholasticScore(student, subject))}
+                    </TableCell>
+                  )),
+                  <TableCell key={`${title}-average`} align="center">
+                    {average(student, subjects)}
+                  </TableCell>,
+                ])}
+              </TableRow>
+            ))}
+        </TableBody>
+        </Table>
+      </TableContainer>
+      <GenerateReportButton exam={exam} classe={classe} />
     </>
   );
 };
@@ -777,13 +1277,25 @@ export const StudentListConsolidated = () => {
     console.log("lion ceccah", editing);
   }, [editing]);
 
-  return (
-    <div>
-      <StudentListConsolidated_
+  if (exam.includes("PT")) {
+    return (
+      <StudentListConsolidatedPT_
         {...{ students, exam, profile, class: classe }}
       />
-    </div>
-  );
+    );
+  } else if (exam == "MT") {
+    return (
+      <StudentConsolidatedMT
+        {...{ students, exam, profile, class: classe }}
+      />
+    );
+  } else if (exam.includes("PB")) {
+    return (
+      <StudentListConsolidatedPB_
+        {...{ students, exam, profile, class: classe }}
+      />
+    );
+  }
   // if (profile?.role && profile.role == "Administrator")
   //   return (
   //     <StudentListViewing {...{ students, exam, profile, class: classe }} />

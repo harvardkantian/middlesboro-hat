@@ -68,7 +68,21 @@ export default function LoginPage() {
   };
 
   return (
-    <Grid container sx={{ height: "100vh" }}>
+    <Grid
+      container
+      sx={{
+        position: "fixed",
+        inset: 0,
+        width: "100vw",
+        height: "100dvh",
+        m: 0,
+        backgroundImage:
+          'url("/static/assets/images/WhatsApp%20Image%202026-11-01%20at%2023.55.35.jpeg")',
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+      }}
+    >
       {/* Left Side */}
 
       {/* Right Side */}
@@ -88,6 +102,12 @@ export default function LoginPage() {
             maxWidth: 420,
             p: 4,
             borderRadius: 4,
+            color: "#17212b",
+            backgroundColor: "rgba(255, 255, 255, 0.28)",
+            backdropFilter: "blur(18px) saturate(150%)",
+            WebkitBackdropFilter: "blur(18px) saturate(150%)",
+            border: "1px solid rgba(255, 255, 255, 0.48)",
+            boxShadow: "0 18px 48px rgba(0, 0, 0, 0.22)",
           }}
         >
           <Typography
