@@ -16,7 +16,6 @@ import {
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRequest } from "../hooks/useRequest";
-import { getCoScholasticGrade } from "./coScholasticGrade";
 import NumberField from "./NumberField";
 import { Edit, Newspaper } from "@mui/icons-material";
 import { setMarksheetData } from "../context/slices/marksheetSlice";
@@ -46,6 +45,17 @@ const GenerateReportButton = ({ exam, classe }) => {
     </Button>
   );
 };
+
+export const getCoScholasticGrade = (average) => {
+  const score = Number(average);
+  if (!Number.isFinite(score) || score < 0 || score > 5) return "—";
+  if (score > 4) return "A";
+  if (score > 3) return "B";
+  if (score > 2) return "C";
+  if (score > 1) return "D";
+  return "E";
+};
+
 
 export const StudentListConsolidatedPT_ = ({
   students,
