@@ -134,23 +134,14 @@ export const StudentListPEViewing = ({
   class: classe,
 }) => {
   const profSubject = useSelector((state) => state.subject.subject);
-  console.log(
-    "newkirk",
-    students.filter(
-      (student) =>
-        student.class_div.division == classe &&
-        student.marks.filter(
-          (mark) => mark.subject.sub == profSubject.subject.sub,
-        )[0].score != -1000,
-    ),
-    students?.[0]?.marks?.filter(
-      (mark) => mark.subject.sub == profSubject.subject.sub,
-    ),
-    profSubject,
-  );
+  const subjectCode = profSubject?.subject?.sub;
+  const getStudentMark = (student) =>
+    student.marks?.find(
+      (mark) =>
+        mark.exam?.abbreviation === exam && mark.subject?.sub === subjectCode,
+    );
   const navigate = useNavigate();
   const [openSubjectModal, setOpenSubjectModal] = useState(false);
-  console.log(profSubject, "pr str", profSubject);
   // console.log(
   //   JSON.parse(profSubjectStr),
   //   JSON.parse(
@@ -171,7 +162,6 @@ export const StudentListPEViewing = ({
   const handleCloseSubjectModal = () => {
     setOpenSubjectModal(false);
   };
-  console.log("dlbaa", students);
   return (
     <>
       <TableContainer component={Paper}>
@@ -187,22 +177,13 @@ export const StudentListPEViewing = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {console.log(
-              profile.role,
-              exam,
-              classe,
-              students.filter(
-                (student) => student.class_div.division == classe,
-              ),
-            )}
-
-            {(profile.role == "Administrator"
-              ? students.filter((st) => st.class_div.division == classe)
-              : students.filter(
-                  (student) => student.class_div.division == classe,
-                )
-            ).map((student) => (
+            {students
+              .filter((student) => student.class_div?.division === classe)
+              .map((student) => {
+                const score = getStudentMark(student)?.score;
+                return (
               <TableRow
+                key={student.id ?? student.roll_no}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell align="center">{student.roll_no}</TableCell>
@@ -215,41 +196,20 @@ export const StudentListPEViewing = ({
                       fontFamily: "Geist Mono, monospace !important",
                     }}
                   >
-                    {/* {console.log("Shacri", exam)}0 */}
-                    {student.marks.filter(
-                      (mark) =>
-                        mark.exam.abbreviation == exam &&
-                        mark.subject.sub == profSubject.subject.sub,
-                    )[0].score < 10 && (
-                      <span style={{ visibility: "hidden" }}>{"a"}</span>
-                    )}
-                    {student.marks.filter(
-                      (mark) =>
-                        mark.exam.abbreviation == exam &&
-                        mark.subject.sub == profSubject.subject.sub,
-                    )[0].score == "1000"
-                      ? "✅"
-                      : student.marks.filter(
-                            (mark) =>
-                              mark.exam.abbreviation == exam &&
-                              mark.subject.sub == profSubject.subject.sub,
-                          )[0].score == -1000
-                        ? "N/A"
-                        : student.marks.filter(
-                              (mark) =>
-                                mark.exam.abbreviation == exam &&
-                                mark.subject.sub == profSubject.subject.sub,
-                            )[0].score == 500
-                          ? "ab"
-                          : student.marks.filter(
-                              (mark) =>
-                                mark.exam.abbreviation == exam &&
-                                mark.subject.sub == profSubject.subject.sub,
-                            )[0].score}
+                    {score === undefined || score === null
+                      ? "—"
+                      : Number(score) === 1000
+                        ? "✅"
+                        : Number(score) === -1000
+                          ? "N/A"
+                          : Number(score) === 500
+                            ? "ab"
+                            : score}
                   </TableCell>
                 )}
               </TableRow>
-            ))}
+                );
+              })}
           </TableBody>
         </Table>
       </TableContainer>

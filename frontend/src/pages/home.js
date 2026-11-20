@@ -35,7 +35,7 @@ const Home = () => {
       {role == "Administrator" || subject == "ALL" ? (
         <StudentListConsolidated />
       ) : (
-        <StudentListPE />
+        <StudentList />
       )}
     </>
   );

@@ -1158,7 +1158,8 @@ const StudentListViewing = ({
   class: classe,
   handleSubmit,
 }) => {
-  const profSubject = useSelector((state) => state.subject.subject);
+  const profSubject = useSelector((state) => state);
+  console.log("Bonjour Saulut Coment cava", profSubject)
   if (
     ["PE", "Yoga", "NSS", "MA", "ATL", "WE", "Comp"].includes(
       profSubject.subject.sub,
