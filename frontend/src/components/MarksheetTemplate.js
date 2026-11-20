@@ -346,7 +346,9 @@ export default function MarksheetTemplate() {
       </TableContainer>
 
       <SignatureSection />
-      <Button className="marksheet-print-button remove-print" variant="contained" sx={{ mt: 3 }} onClick={() => window.print()}>
+      <Button className="marksheet-print-button remove-print" variant="contained" sx={{ mt: 3,"@media print": {
+          display: "none"
+          }, }} onClick={() => window.print()}>
         Print Marksheet
       </Button>
     </Box>
