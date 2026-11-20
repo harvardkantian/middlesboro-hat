@@ -16,6 +16,7 @@ import {
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRequest } from "../hooks/useRequest";
+import { getCoScholasticGrade } from "./coScholasticGrade";
 import NumberField from "./NumberField";
 import { Edit, Newspaper } from "@mui/icons-material";
 import { setMarksheetData } from "../context/slices/marksheetSlice";
@@ -393,7 +394,7 @@ export const StudentListConsolidatedPB_ = ({
             {students
               .filter((student) => student.class_div.division === classe)
               .map((student) => (
-                <TableRow 
+                <TableRow
                   sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                 >
                   <TableCell align="center">{student.roll_no}</TableCell>
@@ -480,11 +481,7 @@ export const StudentListConsolidatedPB_ = ({
   );
 };
 
-export const StudentConsolidatedMT = ({
-  students,
-  exam,
-  class: classe,
-}) => {
+export const StudentConsolidatedMT = ({ students, exam, class: classe }) => {
   const scholasticSubjects = [
     { subject: "Math", max: 80 },
     { subject: "English", max: 80 },
@@ -520,7 +517,11 @@ export const StudentConsolidatedMT = ({
   };
   const getGrade = (score, max) => {
     const numericScore = Number(score);
-    if (!Number.isFinite(numericScore) || numericScore < 0 || numericScore > max) {
+    if (
+      !Number.isFinite(numericScore) ||
+      numericScore < 0 ||
+      numericScore > max
+    ) {
       return "—";
     }
     const percentage = (numericScore / max) * 100;
@@ -540,6 +541,21 @@ export const StudentConsolidatedMT = ({
     if (Number(score) === 500) return "ab";
     return `${score}/${max}`;
   };
+  const rawScore = (score) => {
+    if (score === undefined || score === null || score === "") return "—";
+    if (Number(score) === 1000) return "✅";
+    if (Number(score) === -1000) return "N/A";
+    if (Number(score) === 500) return "ab";
+    return score;
+  };
+  const isBelowOneThird = (score, max) => {
+    const numericScore = Number(score);
+    return (
+      Number.isFinite(numericScore) &&
+      numericScore >= 0 &&
+      numericScore < max / 3
+    );
+  };
   const average = (student, subjects) => {
     const scores = subjects
       .map((subject) => Number(getCoScholasticScore(student, subject)))
@@ -553,76 +569,129 @@ export const StudentConsolidatedMT = ({
     <>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="MT consolidated marks">
-        <TableHead>
-          <TableRow>
-            <TableCell rowSpan={2} align="center">R No</TableCell>
-            <TableCell rowSpan={2}>Surname</TableCell>
-            <TableCell rowSpan={2}>First Name</TableCell>
-            {scholasticSubjects.map(({ subject }) => (
-              <TableCell key={subject} align="center" colSpan={3}>
-                {subject}
+          <TableHead>
+            <TableRow>
+              <TableCell rowSpan={2} align="center">
+                R No
               </TableCell>
-            ))}
-            {groupedSubjects.map(({ title, subjects }) => (
-              <TableCell key={title} align="center" colSpan={subjects.length + 1}>
-                {title}
-              </TableCell>
-            ))}
-          </TableRow>
-          <TableRow>
-            {scholasticSubjects.flatMap(({ subject, max }) => [
-              <TableCell key={`${subject}-raw`} align="center">Marks/{max}</TableCell>,
-              <TableCell key={`${subject}-100`} align="center">Marks/100</TableCell>,
-              <TableCell key={`${subject}-grade`} align="center">Grade</TableCell>,
-            ])}
-            {groupedSubjects.flatMap(({ title, subjects }) => [
-              ...subjects.map((subject) => (
-                <TableCell key={`${title}-${subject}`} align="center">{subject}/5</TableCell>
-              )),
-              <TableCell key={`${title}-average`} align="center">Average</TableCell>,
-            ])}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {students
-            .filter((student) => student.class_div?.division === classe)
-            .map((student) => (
-              <TableRow key={student.id ?? student.roll_no}>
-                <TableCell align="center">{student.roll_no}</TableCell>
-                <TableCell>{student.surname}</TableCell>
-                <TableCell>{student.first_name}</TableCell>
-                {scholasticSubjects.flatMap(({ subject, max }) => {
-                  const score = getScore(student, subject);
-                  const numericScore = Number(score);
-                  const hasNumericScore = Number.isFinite(numericScore) && numericScore >= 0 && numericScore <= max;
-                  const percentage = hasNumericScore
-                    ? ((numericScore * 100) / max).toFixed(1)
-                    : printableScore(score, max);
-                  return [
-                    <TableCell key={`${subject}-raw`} align="center">
-                      {printableScore(score, max)}
-                    </TableCell>,
-                    <TableCell key={`${subject}-100`} align="center">
-                      {percentage}
-                    </TableCell>,
-                    <TableCell key={`${subject}-grade`} align="center">
-                      {getGrade(score, max)}
-                    </TableCell>,
-                  ];
-                })}
-                {groupedSubjects.flatMap(({ title, subjects }) => [
-                  ...subjects.map((subject) => (
-                    <TableCell key={`${title}-${subject}`} align="center">
-                      {printableScore(getCoScholasticScore(student, subject))}
-                    </TableCell>
-                  )),
+              <TableCell rowSpan={2}>Surname</TableCell>
+              <TableCell rowSpan={2}>First Name</TableCell>
+              {scholasticSubjects.map(({ subject }) => (
+                <TableCell key={subject} align="center" colSpan={3}>
+                  {subject}
+                </TableCell>
+              ))}
+              {groupedSubjects.map(({ title, subjects }) => (
+                <TableCell
+                  key={title}
+                  align="center"
+                  colSpan={subjects.length + 1}
+                >
+                  {title}
+                </TableCell>
+              ))}
+            </TableRow>
+            <TableRow>
+              {scholasticSubjects.flatMap(({ subject, max }) => [
+                <TableCell key={`${subject}-raw`} align="center">
+                  Marks
+                </TableCell>,
+                <TableCell key={`${subject}-100`} align="center">
+                  Marks/100
+                </TableCell>,
+                <TableCell key={`${subject}-grade`} align="center">
+                  Grade
+                </TableCell>,
+              ])}
+              {groupedSubjects.flatMap(({ title, subjects }) => [
+                ...subjects.map((subject) => (
+                  <TableCell key={`${title}-${subject}`} align="center">
+                    {subject}/5
+                  </TableCell>
+                )),
                   <TableCell key={`${title}-average`} align="center">
-                    {average(student, subjects)}
-                  </TableCell>,
-                ])}
-              </TableRow>
-            ))}
-        </TableBody>
+                    Grade
+                </TableCell>,
+              ])}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {students
+              .filter((student) => student.class_div?.division === classe)
+              .map((student) => (
+                <TableRow key={student.id ?? student.roll_no}>
+                  <TableCell align="center">{student.roll_no}</TableCell>
+                  <TableCell>{student.first_name}</TableCell>
+                  <TableCell>{student.surname}</TableCell>
+                  {scholasticSubjects.flatMap(({ subject, max }) => {
+                    const score = getScore(student, subject);
+                    const numericScore = Number(score);
+                    const hasNumericScore =
+                      Number.isFinite(numericScore) &&
+                      numericScore >= 0 &&
+                      numericScore <= max;
+                    const lowMark = isBelowOneThird(score, max);
+                    const percentage = hasNumericScore
+                      ? ((numericScore * 100) / max).toFixed(1)
+                      : printableScore(score, max);
+                    return [
+                      <TableCell
+                        key={`${subject}-raw`}
+                        align="center"
+                        sx={{ color: lowMark ? "error.main" : "inherit" }}
+                      >
+                        {rawScore(score)}
+                      </TableCell>,
+                      <TableCell
+                        key={`${subject}-100`}
+                        align="center"
+                        sx={{ color: lowMark ? "error.main" : "inherit" }}
+                      >
+                        {percentage}
+                      </TableCell>,
+                      <TableCell
+                        key={`${subject}-grade`}
+                        align="center"
+                        sx={{ color: lowMark ? "error.main" : "inherit" }}
+                      >
+                        {getGrade(score, max)}
+                      </TableCell>,
+                    ];
+                  })}
+                  {groupedSubjects.flatMap(({ title, subjects }) => [
+                    ...subjects.map((subject) => (
+                      <TableCell
+                        key={`${title}-${subject}`}
+                        align="center"
+                        sx={{
+                          color: isBelowOneThird(
+                            getCoScholasticScore(student, subject),
+                            5,
+                          )
+                            ? "error.main"
+                            : "inherit",
+                        }}
+                      >
+                        {printableScore(getCoScholasticScore(student, subject))}
+                      </TableCell>
+                    )),
+                    <TableCell
+                      key={`${title}-average`}
+                      align="center"
+                      sx={{
+                        color: isBelowOneThird(average(student, subjects), 5)
+                          ? "error.main"
+                          : "inherit",
+                      }}
+                    >
+                    {average(student, subjects) === "—"
+                      ? "—"
+                      : getCoScholasticGrade(average(student, subjects))}
+                    </TableCell>,
+                  ])}
+                </TableRow>
+              ))}
+          </TableBody>
         </Table>
       </TableContainer>
       <GenerateReportButton exam={exam} classe={classe} />
@@ -1287,9 +1356,7 @@ export const StudentListConsolidated = () => {
     );
   } else if (exam == "MT") {
     return (
-      <StudentConsolidatedMT
-        {...{ students, exam, profile, class: classe }}
-      />
+      <StudentConsolidatedMT {...{ students, exam, profile, class: classe }} />
     );
   } else if (exam.includes("PB")) {
     return (

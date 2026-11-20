@@ -7,13 +7,10 @@ import { setFormatValue } from "../context/slices/formatSlice";
 import { setMarksheetData } from "../context/slices/marksheetSlice";
 import SubjectSelectModal from "./SubjectSelectModal";
 import { setStudentsValue } from "../context/slices/studentSlice";
+import { getCoScholasticGrade } from "./coScholasticGrade";
 
 const getActivityGrade = (avg) => {
-  if (avg > 4) return "A";
-  if (avg > 3) return "B";
-  if (avg > 2) return "C";
-  if (avg > 1) return "D";
-  return "";
+  return getCoScholasticGrade(avg);
 };
 
 // Derive grade from a normalised-to-100 score
@@ -442,6 +439,7 @@ const SubjectList = () => {
       field: "activity_average",
       headerName: "Average",
       width: 100,
+      valueFormatter: (value) => (value === "" || value == null ? "—" : getCoScholasticGrade(value)),
       align: "center",
       headerAlign: "center",
     },
@@ -480,6 +478,7 @@ const SubjectList = () => {
       field: "skill_average",
       headerName: "Average",
       width: 100,
+      valueFormatter: (value) => (value === "" || value == null ? "—" : getCoScholasticGrade(value)),
       align: "center",
       headerAlign: "center",
     },

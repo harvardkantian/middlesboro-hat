@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useRequest } from "../hooks/useRequest";
+import { getCoScholasticGrade } from "./coScholasticGrade";
 
 const subjectOrder = [
   "Math", "English", "Hindi", "Sci", "French", "SS", "HS", "Painting", "HC", "AI", "IT",
@@ -46,6 +47,10 @@ const gradeFromScore = (score, max) => {
   if (percentage >= 41) return "C2";
   if (percentage >= 33) return "D";
   return "E";
+};
+const isBelowOneThird = (score, max) => {
+  const value = Number(score);
+  return Number.isFinite(value) && value >= 0 && value < max / 3;
 };
 
 const SignatureSection = () => (
@@ -136,9 +141,8 @@ export default function MarksheetTemplate() {
 
   const formatCoScholasticMark = (score) => {
     const display = formatMark(score);
-    return display === "—" || ["Ab", "Not done", "N/A"].includes(display)
-      ? display
-      : `${display}/5`;
+    if (display === "—" || ["Ab", "Not done", "N/A"].includes(display)) return display;
+    return `${display}/5`;
   };
 
   const coScholasticAverage = (student, groupSubjects) => {
@@ -186,7 +190,7 @@ export default function MarksheetTemplate() {
         {isScholasticConsolidated ? (
           [
             ...subjects.flatMap((sub) => [
-              <TableCell key={`${sub}-raw`} align="center">{sub}/{subjectMaxMarks[sub] || 80}</TableCell>,
+            <TableCell key={`${sub}-raw`} align="center">Marks</TableCell>,
               <TableCell key={`${sub}-100`} align="center">{sub}/100</TableCell>,
               <TableCell key={`${sub}-grade`} align="center">Grade</TableCell>,
             ]),
@@ -194,7 +198,7 @@ export default function MarksheetTemplate() {
               ...groupSubjects.map((sub) => (
                 <TableCell key={`${title}-${sub}`} align="center">{sub}/5</TableCell>
               )),
-              <TableCell key={`${title}-average`} align="center">Average</TableCell>,
+              <TableCell key={`${title}-average`} align="center">Grade</TableCell>,
             ]) : []),
           ]
         ) : format === "individual" ? (
@@ -202,7 +206,7 @@ export default function MarksheetTemplate() {
             <TableCell align="center">Marks/20</TableCell>
           ) : (
             <>
-              <TableCell align="center">MO/{subjectMaxMarks[subject] || 80}</TableCell>
+              <TableCell align="center">Marks</TableCell>
               <TableCell align="center">MO/100</TableCell>
               <TableCell align="center">Grade</TableCell>
             </>
@@ -253,22 +257,25 @@ export default function MarksheetTemplate() {
           const score = scoreFor(student, sub);
           const max = subjectMaxMarks[sub] || 80;
           const valid = Number.isFinite(Number(score)) && Number(score) >= 0 && Number(score) <= max;
+          const lowMark = isBelowOneThird(score, max);
           return [
-            <TableCell key={`${sub}-raw`} align="center">{formatMark(score)}</TableCell>,
-            <TableCell key={`${sub}-100`} align="center">
+            <TableCell key={`${sub}-raw`} align="center" sx={{ color: lowMark ? "error.main" : "inherit" }}>{formatMark(score)}</TableCell>,
+            <TableCell key={`${sub}-100`} align="center" sx={{ color: lowMark ? "error.main" : "inherit" }}>
               {valid ? ((Number(score) * 100) / max).toFixed(1) : formatMark(score)}
             </TableCell>,
-            <TableCell key={`${sub}-grade`} align="center">{gradeFromScore(score, max)}</TableCell>,
+            <TableCell key={`${sub}-grade`} align="center" sx={{ color: lowMark ? "error.main" : "inherit" }}>{gradeFromScore(score, max)}</TableCell>,
           ];
         })}
         {showCoScholastic && coScholasticGroups.flatMap(({ title, subjects: groupSubjects }) => [
           ...groupSubjects.map((sub) => (
-            <TableCell key={`${title}-${sub}`} align="center">
+            <TableCell key={`${title}-${sub}`} align="center" sx={{ color: isBelowOneThird(coScholasticScoreFor(student, sub), 5) ? "error.main" : "inherit" }}>
               {formatCoScholasticMark(coScholasticScoreFor(student, sub))}
             </TableCell>
           )),
-          <TableCell key={`${title}-average`} align="center">
-            {coScholasticAverage(student, groupSubjects)}
+          <TableCell key={`${title}-average`} align="center" sx={{ color: isBelowOneThird(coScholasticAverage(student, groupSubjects), 5) ? "error.main" : "inherit" }}>
+            {coScholasticAverage(student, groupSubjects) === "—"
+              ? "—"
+              : getCoScholasticGrade(coScholasticAverage(student, groupSubjects))}
           </TableCell>,
         ])}
         <TableCell align="center">{total.toFixed(1)}</TableCell>

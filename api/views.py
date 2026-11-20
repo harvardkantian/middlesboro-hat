@@ -281,7 +281,7 @@ class MeView(APIView):
 
 class HandleStudentsData(APIView):
     serializer_class = ExcelDataSerializer
-    exams = ["PT1", "PT2", "PT3", "MT", "PB1", "PB2"]
+    exams = ["PT1", "PT2", "PT3", "MT", "PB1", "PB2", "IMA", "IPO", "ISE"]
 
     def post(self, request, format=True):
         serializer = self.serializer_class(data=request.data)
