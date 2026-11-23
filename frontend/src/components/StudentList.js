@@ -525,24 +525,39 @@ export const StudentConsolidatedMT = ({ students, exam, class: classe }) => {
       matchingMarks?.find((mark) => mark.exam?.abbreviation === "SE")?.score
     );
   };
-  const getGrade = (score, max) => {
-    const numericScore = Number(score);
-    if (
-      !Number.isFinite(numericScore) ||
-      numericScore < 0 ||
-      numericScore > max
-    ) {
-      return "—";
+  const getCohortGrade = (student, subject) => {
+    const gradeLevel = student.class_div?.grade;
+    if (gradeLevel === undefined || gradeLevel === null) return "—";
+    const cohort = students.filter(
+      (candidate) => {
+        if (String(candidate.class_div?.grade) !== String(gradeLevel)) return false;
+        if (Number(gradeLevel) !== 10) return true;
+        return ["A", "B", "C"].includes(
+          String(candidate.class_div?.division).trim().toUpperCase(),
+        );
+      },
+    );
+    const ranked = [];
+
+    for (const candidate of cohort) {
+      const score = getScore(candidate, subject);
+      if (score === undefined || score === null || score === "") return "—";
+      const numericScore = Number(score);
+      if (Number.isFinite(numericScore) && numericScore >= 0) {
+        ranked.push({ id: candidate.id, score: numericScore });
+      } else if (![500, 1000, -1000].includes(numericScore)) {
+        return "—";
+      }
     }
-    const percentage = (numericScore / max) * 100;
-    if (percentage >= 91) return "A1";
-    if (percentage >= 81) return "A2";
-    if (percentage >= 71) return "B1";
-    if (percentage >= 61) return "B2";
-    if (percentage >= 51) return "C1";
-    if (percentage >= 41) return "C2";
-    if (percentage >= 33) return "D";
-    return "E";
+
+    ranked.sort((a, b) => b.score - a.score);
+    const rank = ranked.findIndex((entry) => entry.id === student.id);
+    if (rank < 0) return "—";
+    // Each consecutive eighth of the combined cohort gets one grade band;
+    // the final eighth is E.
+    const percentileGrades = ["A1", "A2", "B1", "B2", "C1", "C2", "D"];
+    const band = Math.floor((rank / Math.max(1, ranked.length)) * 8);
+    return percentileGrades[band] ?? "E";
   };
   const printableScore = (score, max = 5) => {
     if (score === undefined || score === null || score === "") return "—";
@@ -664,7 +679,7 @@ export const StudentConsolidatedMT = ({ students, exam, class: classe }) => {
                         align="center"
                         sx={{ color: lowMark ? "error.main" : "inherit" }}
                       >
-                        {getGrade(score, max)}
+                        {getCohortGrade(student, subject)}
                       </TableCell>,
                     ];
                   })}

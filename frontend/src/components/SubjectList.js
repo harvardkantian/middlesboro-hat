@@ -13,17 +13,7 @@ const getActivityGrade = (avg) => {
   return getCoScholasticGrade(avg);
 };
 
-// Derive grade from a normalised-to-100 score
-const getScholasticGrade = (score100) => {
-  if (score100 >= 91) return "A1";
-  if (score100 >= 81) return "A2";
-  if (score100 >= 71) return "B1";
-  if (score100 >= 61) return "B2";
-  if (score100 >= 51) return "C1";
-  if (score100 >= 41) return "C2";
-  if (score100 >= 33) return "D";
-  return "E";
-};
+const percentileGrades = ["A1", "A2", "B1", "B2", "C1", "C2", "D"];
 
 const SubjectList = () => {
   const classe = useSelector((store) => store.class);
@@ -879,6 +869,52 @@ const SubjectList = () => {
     setRawStudents(allStudents.filter((a) => a.class_div.division == classe));
   }, [classe, allStudents]);
 
+  // Rank each subject across every class that offers it. Grades stay hidden
+  // until every student in that cohort has a mark for the selected exam.
+  const getCohortGrade = (sub, studentId, overrideScore) => {
+    // Divisions A, B, C, etc. at the same grade level share one percentile pool.
+    const target = allStudents.find((student) => student.id === studentId);
+    const gradeLevel = target?.class_div?.grade;
+    if (gradeLevel === undefined || gradeLevel === null) return "";
+    const cohort = allStudents.filter((student) => student.class_div?.grade === gradeLevel);
+    if (!cohort.length) return "";
+    const prefix = sub.toLowerCase();
+    const scoreById = new Map();
+    for (const student of cohort) {
+      const mark = student.marks?.find((item) => item.subject?.sub === sub && item.exam?.abbreviation === exam);
+      const edited = editedRows[student.id];
+      const editedScore = edited?.exam === exam ? edited?.[prefix] : undefined;
+      const score = student.id === studentId && overrideScore !== undefined
+        ? overrideScore
+        : editedScore !== undefined ? editedScore : mark?.score;
+      if (score === undefined || score === null || score === "") return "";
+      if (typeof score === "number" && score >= 0) scoreById.set(student.id, score);
+      else if (score !== -1000 && score !== 1000 && score !== 500) return "";
+    }
+    const ranked = [...scoreById.entries()].sort((a, b) => b[1] - a[1]);
+    const rank = ranked.findIndex(([id]) => id === studentId);
+    if (rank < 0) return "";
+    const band = Math.floor((rank / Math.max(1, ranked.length)) * 8);
+    return band < percentileGrades.length ? percentileGrades[band] : "E";
+  };
+
+  useEffect(() => {
+    if (!students.length || exam === "INT" || exam === "SP" || exam === "SE") return;
+    setStudents((current) => current.map((row) => {
+      const next = { ...row };
+      scholasticSubjectList.forEach((sub) => {
+        const score = Number(next[sub.toLowerCase()]);
+        next[`${sub.toLowerCase()}_grade`] = Number.isFinite(score)
+          ? getCohortGrade(sub, row.student_id, score)
+          : "";
+      });
+      if (["PT1", "PT2", "PT3"].includes(exam)) {
+        next.sci_grade = getCohortGrade("Sci", row.student_id, next.sci);
+      }
+      return next;
+    }));
+  }, [allStudents, editedRows, exam]);
+
   // ─── Row building ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (exam === "INT") {
@@ -978,7 +1014,7 @@ const SubjectList = () => {
     if (typeof score === "number" && max) {
       const mo100 = Number(((score * 100) / max).toFixed(1));
       row[`${prefix}_mo_100`] = mo100;
-      row[`${prefix}_grade`] = getScholasticGrade(mo100);
+      row[`${prefix}_grade`] = getCohortGrade(sub, row.student_id, score);
     } else {
       row[`${prefix}_mo_100`] = "";
       row[`${prefix}_grade`] = "";
@@ -1064,7 +1100,7 @@ const SubjectList = () => {
         row.sci = phys + chem + bio;
 
         row.sci_mo_100 = row.sci;
-        row.sci_grade = getScholasticGrade(row.sci * 5);
+        row.sci_grade = getCohortGrade("Sci", row.student_id, row.sci);
       }
 
       // co-scholastic activity
@@ -1270,7 +1306,7 @@ const SubjectList = () => {
           updatedRow.sci = phys + chem + bio;
 
           updatedRow.sci_mo_100 = updatedRow.sci;
-          updatedRow.sci_grade = getScholasticGrade(updatedRow.sci * 5);
+          updatedRow.sci_grade = getCohortGrade("Sci", updatedRow.student_id, updatedRow.sci);
         }
 
         computeTotals(updatedRow);
