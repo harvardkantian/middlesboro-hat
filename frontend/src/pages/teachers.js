@@ -61,6 +61,7 @@ const Teachers = () => {
       <AddEditTeacher
         open={modalOpen}
         setOpen={setModalOpen}
+        onAdded={() => setStudentRefreshKey((key) => key + 1)}
         mode={{ mode: "add" }}
       />
     </>

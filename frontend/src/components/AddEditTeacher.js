@@ -22,7 +22,7 @@ import axios from "axios";
 import { useRequest } from "../hooks/useRequest";
 import { useNavigate } from "react-router";
 
-const AddEditTeacher = ({ mode: { mode, teacher }, open, setOpen }) => {
+const AddEditTeacher = ({ mode: { mode, teacher }, open, setOpen, onAdded }) => {
   const navigate = useNavigate();
   const subjectList = [
     "Math",
@@ -125,7 +125,7 @@ const AddEditTeacher = ({ mode: { mode, teacher }, open, setOpen }) => {
     });
     if (res) {
       localStorage.setItem("timer", true);
-      navigate(0);
+      onAdde?.();
     }
   };
   const handleUpdateSubmit = async () => {
@@ -144,7 +144,7 @@ const AddEditTeacher = ({ mode: { mode, teacher }, open, setOpen }) => {
     });
     if (res) {
       localStorage.setItem("", "");
-      navigate(0);
+      onAdded?.();
     }
   };
   return (
