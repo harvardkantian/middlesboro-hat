@@ -23,6 +23,11 @@ import { setFormatValue } from "../context/slices/formatSlice";
 import SubjectSelectModal from "./SubjectSelectModal";
 import { useNavigate } from "react-router";
 import { StudentListPEEditing, StudentListPEViewing } from "./StudentListPE";
+import {
+  StudentSelectAllCheckbox,
+  StudentSelectionCheckbox,
+  StudentSelectionProvider,
+} from "./StudentSelection";
 
 const GenerateReportButton = ({ exam, classe }) => {
   const navigate = useNavigate();
@@ -58,6 +63,7 @@ export const getCoScholasticGrade = (average) => {
 
 export const StudentListConsolidatedPT_ = ({
   students,
+  setStudents,
   exam,
   profile,
   class: classe,
@@ -75,6 +81,9 @@ export const StudentListConsolidatedPT_ = ({
     "AI",
     "IT",
   ];
+  const visibleStudents = students.filter(
+    (student) => student.class_div?.division === classe,
+  );
 
   return (
     <>
@@ -82,6 +91,9 @@ export const StudentListConsolidatedPT_ = ({
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
+              <TableCell padding="checkbox">
+                <StudentSelectAllCheckbox students={visibleStudents} />
+              </TableCell>
               <TableCell align="center">R No</TableCell>
               <TableCell align="left">Surname</TableCell>
               <TableCell align="left">First Name</TableCell>
@@ -110,12 +122,14 @@ export const StudentListConsolidatedPT_ = ({
               ),
             )}
 
-            {students
-              .filter((student) => student.class_div.division === classe)
-              .map((student) => (
+            {visibleStudents.map((student) => (
                 <TableRow
+                  key={student.id}
                   sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                 >
+                  <TableCell padding="checkbox">
+                    <StudentSelectionCheckbox studentId={student.id} />
+                  </TableCell>
                   <TableCell align="center">{student.roll_no}</TableCell>
                   <TableCell align="left">{student.first_name}</TableCell>
                   <TableCell align="left">{student.surname}</TableCell>
@@ -324,6 +338,7 @@ const StudentListConsolidatedPB_Legacy = ({
 };
 export const StudentListConsolidatedPB_ = ({
   students,
+  setStudents,
   exam,
   profile,
   class: classe,
@@ -341,6 +356,9 @@ export const StudentListConsolidatedPB_ = ({
     "AI",
     "IT",
   ];
+  const visibleStudents = students.filter(
+    (student) => student.class_div?.division === classe,
+  );
 
   return (
     <>
@@ -348,6 +366,9 @@ export const StudentListConsolidatedPB_ = ({
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
+              <TableCell padding="checkbox" rowSpan={2}>
+                <StudentSelectAllCheckbox students={visibleStudents} />
+              </TableCell>
               <TableCell align="center">R No</TableCell>
               <TableCell align="left">Surname</TableCell>
               <TableCell align="left">First Name</TableCell>
@@ -400,12 +421,14 @@ export const StudentListConsolidatedPB_ = ({
               ),
             )}
 
-            {students
-              .filter((student) => student.class_div.division === classe)
-              .map((student) => (
+            {visibleStudents.map((student) => (
                 <TableRow
+                  key={student.id}
                   sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                 >
+                  <TableCell padding="checkbox">
+                    <StudentSelectionCheckbox studentId={student.id} />
+                  </TableCell>
                   <TableCell align="center">{student.roll_no}</TableCell>
                   <TableCell align="left">{student.first_name}</TableCell>
                   <TableCell align="left">{student.surname}</TableCell>
@@ -490,7 +513,11 @@ export const StudentListConsolidatedPB_ = ({
   );
 };
 
-export const StudentConsolidatedMT = ({ students, exam, class: classe }) => {
+export const StudentConsolidatedMT = ({
+  students,
+  exam,
+  class: classe,
+}) => {
   const scholasticSubjects = [
     { subject: "Math", max: 80 },
     { subject: "English", max: 80 },
@@ -594,6 +621,9 @@ export const StudentConsolidatedMT = ({ students, exam, class: classe }) => {
         )
       : "—";
   };
+  const visibleStudents = students.filter(
+    (student) => student.class_div?.division === classe,
+  );
 
   return (
     <>
@@ -601,6 +631,9 @@ export const StudentConsolidatedMT = ({ students, exam, class: classe }) => {
         <Table sx={{ minWidth: 650 }} aria-label="MT consolidated marks">
           <TableHead>
             <TableRow>
+              <TableCell rowSpan={2} padding="checkbox">
+                <StudentSelectAllCheckbox students={visibleStudents} />
+              </TableCell>
               <TableCell rowSpan={2} align="center">
                 R No
               </TableCell>
@@ -646,10 +679,11 @@ export const StudentConsolidatedMT = ({ students, exam, class: classe }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {students
-              .filter((student) => student.class_div?.division === classe)
-              .map((student) => (
+            {visibleStudents.map((student) => (
                 <TableRow key={student.id ?? student.roll_no}>
+                  <TableCell padding="checkbox">
+                    <StudentSelectionCheckbox studentId={student.id} />
+                  </TableCell>
                   <TableCell align="center">{student.roll_no}</TableCell>
                   <TableCell>{student.first_name}</TableCell>
                   <TableCell>{student.surname}</TableCell>
@@ -742,6 +776,7 @@ const subjectMaxMarks = {
 
 const StudentListAcademicViewing = ({
   students,
+  setStudents,
   exam,
   profile,
   class: classe,
@@ -780,6 +815,15 @@ const StudentListAcademicViewing = ({
   const handleCloseSubjectModal = () => {
     setOpenSubjectModal(false);
   };
+  const classStudents = students.filter(
+    (student) => student.class_div?.division === classe,
+  );
+  const visibleStudents = profile.role === "Administrator" || exam === "INT"
+    ? classStudents
+    : classStudents.filter((student) => {
+        const mark = getStudentMark(student);
+        return mark && mark.score !== -1000;
+      });
   console.log("dlbaa", students);
   return (
     <>
@@ -787,6 +831,9 @@ const StudentListAcademicViewing = ({
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
+              <TableCell padding="checkbox">
+                <StudentSelectAllCheckbox students={visibleStudents} />
+              </TableCell>
               <TableCell align="center">R No</TableCell>
               <TableCell align="left">Surname</TableCell>
               <TableCell align="left">First Name</TableCell>
@@ -805,32 +852,16 @@ const StudentListAcademicViewing = ({
               ),
             )}
 
-            {(profile.role == "Administrator"
-              ? students.filter((st) => st.class_div.division == classe)
-              : (exam == "INT"
-                  ? students.filter(
-                      (student) => student.class_div.division == classe,
-                    )
-                  : students.filter((student) => {
-                      const mark = getStudentMark(student);
-                      return student.class_div.division == classe &&
-                        mark && mark.score != -1000;
-                    })) &&
-                (exam == "INT"
-                  ? students.filter(
-                      (student) => student.class_div.division == classe,
-                    )
-                  : students.filter((student) => {
-                      const mark = getStudentMark(student);
-                      return student.class_div.division == classe &&
-                        mark && mark.score != -1000;
-                    }))
-            ).map((student) => {
+            {visibleStudents.map((student) => {
               const mark = getStudentMark(student);
               return (
               <TableRow
+                key={student.id}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
+                <TableCell padding="checkbox">
+                  <StudentSelectionCheckbox studentId={student.id} />
+                </TableCell>
                 <TableCell align="center">{student.roll_no}</TableCell>
                 <TableCell align="left">{student.first_name}</TableCell>
                 <TableCell align="left">{student.surname}</TableCell>
@@ -1292,21 +1323,25 @@ const StudentList = ({ refreshKey = 0 }) => {
       >
         Edit
       </Button>
-      {editing ? (
-        <StudentListEditing
-          {...{
-            students,
-            exam,
-            profile,
-            class: classe,
-            editing,
-            setStudents,
-            setEditing,
-          }}
-        />
-      ) : (
-        <StudentListViewing {...{ students, exam, profile, class: classe }} />
-      )}
+      <StudentSelectionProvider students={students} setStudents={setStudents}>
+        {editing ? (
+          <StudentListEditing
+            {...{
+              students,
+              exam,
+              profile,
+              class: classe,
+              editing,
+              setStudents,
+              setEditing,
+            }}
+          />
+        ) : (
+          <StudentListViewing
+            {...{ students, setStudents, exam, profile, class: classe }}
+          />
+        )}
+      </StudentSelectionProvider>
     </div>
   );
   // if (profile?.role && profile.role == "Administrator")
@@ -1359,19 +1394,25 @@ export const StudentListConsolidated = ({ refreshKey = 0 }) => {
 
   if (exam.includes("PT")) {
     return (
-      <StudentListConsolidatedPT_
-        {...{ students, exam, profile, class: classe }}
-      />
+      <StudentSelectionProvider students={students} setStudents={setStudents}>
+        <StudentListConsolidatedPT_
+          {...{ students, exam, profile, class: classe }}
+        />
+      </StudentSelectionProvider>
     );
   } else if (exam == "MT") {
     return (
-      <StudentConsolidatedMT {...{ students, exam, profile, class: classe }} />
+      <StudentSelectionProvider students={students} setStudents={setStudents}>
+        <StudentConsolidatedMT {...{ students, exam, profile, class: classe }} />
+      </StudentSelectionProvider>
     );
   } else if (exam.includes("PB")) {
     return (
-      <StudentListConsolidatedPB_
-        {...{ students, exam, profile, class: classe }}
-      />
+      <StudentSelectionProvider students={students} setStudents={setStudents}>
+        <StudentListConsolidatedPB_
+          {...{ students, exam, profile, class: classe }}
+        />
+      </StudentSelectionProvider>
     );
   }
   // if (profile?.role && profile.role == "Administrator")

@@ -21,6 +21,11 @@ import { Edit, Newspaper } from "@mui/icons-material";
 import { setMarksheetData } from "../context/slices/marksheetSlice";
 import { setFormatValue } from "../context/slices/formatSlice";
 import SubjectSelectModal from "./SubjectSelectModal";
+import {
+  StudentSelectAllCheckbox,
+  StudentSelectionCheckbox,
+  StudentSelectionProvider,
+} from "./StudentSelection";
 import { useNavigate } from "react-router";
 
 // export const StudentListConsolidated_ = ({
@@ -129,6 +134,7 @@ import { useNavigate } from "react-router";
 
 export const StudentListPEViewing = ({
   students,
+  setStudents,
   exam,
   profile,
   class: classe,
@@ -162,12 +168,18 @@ export const StudentListPEViewing = ({
   const handleCloseSubjectModal = () => {
     setOpenSubjectModal(false);
   };
+  const visibleStudents = students.filter(
+    (student) => student.class_div?.division === classe,
+  );
   return (
     <>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
+              <TableCell padding="checkbox">
+                <StudentSelectAllCheckbox students={visibleStudents} />
+              </TableCell>
               <TableCell align="center">R No</TableCell>
               <TableCell align="left">Surname</TableCell>
               <TableCell align="left">First Name</TableCell>
@@ -177,15 +189,16 @@ export const StudentListPEViewing = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {students
-              .filter((student) => student.class_div?.division === classe)
-              .map((student) => {
+            {visibleStudents.map((student) => {
                 const score = getStudentMark(student)?.score;
                 return (
               <TableRow
                 key={student.id ?? student.roll_no}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
+                <TableCell padding="checkbox">
+                  <StudentSelectionCheckbox studentId={student.id} />
+                </TableCell>
                 <TableCell align="center">{student.roll_no}</TableCell>
                 <TableCell align="left">{student.first_name}</TableCell>
                 <TableCell align="left">{student.surname}</TableCell>
@@ -524,21 +537,25 @@ const StudentListPE = ({ refreshKey = 0 }) => {
       >
         Edit
       </Button>
-      {editing ? (
-        <StudentListPEEditing
-          {...{
-            students,
-            exam,
-            profile,
-            class: classe,
-            editing,
-            setStudents,
-            setEditing,
-          }}
-        />
-      ) : (
-        <StudentListPEViewing {...{ students, exam, profile, class: classe }} />
-      )}
+      <StudentSelectionProvider students={students} setStudents={setStudents}>
+        {editing ? (
+          <StudentListPEEditing
+            {...{
+              students,
+              exam,
+              profile,
+              class: classe,
+              editing,
+              setStudents,
+              setEditing,
+            }}
+          />
+        ) : (
+          <StudentListPEViewing
+            {...{ students, setStudents, exam, profile, class: classe }}
+          />
+        )}
+      </StudentSelectionProvider>
     </div>
   );
   // if (profile?.role && profile.role == "Administrator")
