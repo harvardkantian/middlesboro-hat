@@ -11,9 +11,27 @@ import { useState } from "react";
 import { useRequest } from "../hooks/useRequest";
 
 const enrolledSubjects = [
-  "Math", "English", "Hindi", "Sci", "French", "SS", "HS", "Painting",
-  "HC", "AI", "IT", "PE", "Yoga", "NSS", "MA", "Comp", "WE", "ATL",
-  "Art", "Music", "SD",
+  "Math",
+  "English",
+  "Hindi",
+  "Sci",
+  "French",
+  "SS",
+  "HS",
+  "Painting",
+  "HC",
+  "AI",
+  "IT",
+  "PE",
+  "Yoga",
+  "NSS",
+  "MA",
+  "Comp",
+  "WE",
+  "ATL",
+  "Art",
+  "Music",
+  "SD",
 ];
 
 export default function AddStudent({ className, onAdded }) {
@@ -54,8 +72,8 @@ export default function AddStudent({ className, onAdded }) {
             excel_data: [
               {
                 no: parsedRollNo,
-                first_name: firstName.trim(),
-                surname: surname.trim(),
+                first_name: surname.trim(),
+                surname: firstName.trim(),
                 subjects: enrolledSubjects,
               },
             ],
@@ -92,7 +110,9 @@ export default function AddStudent({ className, onAdded }) {
       <Dialog open={open} onClose={resetAndClose} fullWidth maxWidth="xs">
         <form onSubmit={handleSubmit}>
           <DialogTitle>Add Student</DialogTitle>
-          <DialogContent sx={{ display: "grid", gap: 2, pt: "12px !important" }}>
+          <DialogContent
+            sx={{ display: "grid", gap: 2, pt: "12px !important" }}
+          >
             <TextField
               autoFocus
               required
@@ -114,10 +134,16 @@ export default function AddStudent({ className, onAdded }) {
               value={surname}
               onChange={(event) => setSurname(event.target.value)}
             />
-            {formError && <div role="alert" style={{ color: "#d32f2f" }}>{formError}</div>}
+            {formError && (
+              <div role="alert" style={{ color: "#d32f2f" }}>
+                {formError}
+              </div>
+            )}
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
-            <Button onClick={resetAndClose} disabled={isLoading}>Cancel</Button>
+            <Button onClick={resetAndClose} disabled={isLoading}>
+              Cancel
+            </Button>
             <Button type="submit" variant="contained" disabled={isLoading}>
               {isLoading ? "Adding…" : "Add Student"}
             </Button>

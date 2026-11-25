@@ -27,6 +27,7 @@ import {
   StudentSelectAllCheckbox,
   StudentSelectionCheckbox,
   StudentSelectionProvider,
+  sortStudentsByRollNo,
 } from "./StudentSelection";
 
 const GenerateReportButton = ({ exam, classe }) => {
@@ -81,9 +82,9 @@ export const StudentListConsolidatedPT_ = ({
     "AI",
     "IT",
   ];
-  const visibleStudents = students.filter(
+  const visibleStudents = sortStudentsByRollNo(students.filter(
     (student) => student.class_div?.division === classe,
-  );
+  ));
 
   return (
     <>
@@ -356,9 +357,9 @@ export const StudentListConsolidatedPB_ = ({
     "AI",
     "IT",
   ];
-  const visibleStudents = students.filter(
+  const visibleStudents = sortStudentsByRollNo(students.filter(
     (student) => student.class_div?.division === classe,
-  );
+  ));
 
   return (
     <>
@@ -621,9 +622,9 @@ export const StudentConsolidatedMT = ({
         )
       : "—";
   };
-  const visibleStudents = students.filter(
+  const visibleStudents = sortStudentsByRollNo(students.filter(
     (student) => student.class_div?.division === classe,
-  );
+  ));
 
   return (
     <>
@@ -815,15 +816,15 @@ const StudentListAcademicViewing = ({
   const handleCloseSubjectModal = () => {
     setOpenSubjectModal(false);
   };
-  const classStudents = students.filter(
+  const classStudents = sortStudentsByRollNo(students.filter(
     (student) => student.class_div?.division === classe,
-  );
-  const visibleStudents = profile.role === "Administrator" || exam === "INT"
+  ));
+  const visibleStudents = sortStudentsByRollNo(profile.role === "Administrator" || exam === "INT"
     ? classStudents
     : classStudents.filter((student) => {
         const mark = getStudentMark(student);
         return mark && mark.score !== -1000;
-      });
+      }));
   console.log("dlbaa", students);
   return (
     <>
@@ -969,7 +970,7 @@ const StudentListAcademicEditing = ({
     });
   }, [students, exam, profSubject.subject.sub]);
 
-  const filteredStudents =
+  const filteredStudents = sortStudentsByRollNo(
     profile.role === "Administrator"
       ? students.filter((st) => st.class_div.division === classe)
       : exam === "INT"
@@ -986,7 +987,8 @@ const StudentListAcademicEditing = ({
               mark &&
               mark.score !== -1000
             );
-          });
+          }),
+  );
 
   const handleAbsentChange = (studentId, checked) => {
     setEditedMarks((prev) => ({

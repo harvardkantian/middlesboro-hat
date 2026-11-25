@@ -25,6 +25,7 @@ import {
   StudentSelectAllCheckbox,
   StudentSelectionCheckbox,
   StudentSelectionProvider,
+  sortStudentsByRollNo,
 } from "./StudentSelection";
 import { useNavigate } from "react-router";
 
@@ -168,9 +169,9 @@ export const StudentListPEViewing = ({
   const handleCloseSubjectModal = () => {
     setOpenSubjectModal(false);
   };
-  const visibleStudents = students.filter(
+  const visibleStudents = sortStudentsByRollNo(students.filter(
     (student) => student.class_div?.division === classe,
-  );
+  ));
   return (
     <>
       <TableContainer component={Paper}>
@@ -297,9 +298,9 @@ export const StudentListPEEditing = ({
     });
   }, [students, exam, profSubject.subject.sub]);
 
-  const filteredStudents = students.filter(
+  const filteredStudents = sortStudentsByRollNo(students.filter(
     (student) => student.class_div?.division === classe,
-  );
+  ));
 
   const handleAbsentChange = (studentId, checked) => {
     setEditedMarks((prev) => ({

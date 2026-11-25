@@ -4,6 +4,9 @@ import { useRequest } from "../hooks/useRequest";
 
 const StudentSelectionContext = createContext(null);
 
+export const sortStudentsByRollNo = (students) =>
+  [...students].sort((a, b) => Number(a.roll_no) - Number(b.roll_no));
+
 export function StudentSelectionProvider({ students, setStudents, children }) {
   const [selectedIds, setSelectedIds] = useState([]);
   const [deleteError, setDeleteError] = useState("");
