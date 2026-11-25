@@ -30,6 +30,7 @@ const coScholasticGroups = [
 const formatMark = (score) => {
   if (score === undefined || score === null || score === "") return "—";
   if (Number(score) === 500) return "Ab";
+  if (Number(score) === 5000) return "✅";
   if (Number(score) === 1000) return "Not done";
   if (Number(score) === -1000) return "N/A";
   return score;
@@ -117,9 +118,12 @@ export default function MarksheetTemplate() {
       )?.score;
       if (score === undefined || score === null || score === "") return "—";
       const numericScore = Number(score);
+      if ([500, 1000, 5000, -1000].includes(numericScore)) {
+        continue;
+      }
       if (Number.isFinite(numericScore) && numericScore >= 0) {
         ranked.push({ id: candidate.id, score: numericScore });
-      } else if (![500, 1000, -1000].includes(numericScore)) {
+      } else {
         return "—";
       }
     }

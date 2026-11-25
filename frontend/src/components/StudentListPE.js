@@ -250,10 +250,10 @@ export const StudentListPEEditing = ({
     const data = {};
 
     students.forEach((student) => {
-      const mark = student.marks.find(
+      const mark = student.marks?.find(
         (m) =>
-          m.exam.abbreviation === exam &&
-          m.subject.sub === profSubject.subject.sub,
+          m.exam?.abbreviation === exam &&
+          m.subject?.sub === profSubject.subject.sub,
       );
 
       if (mark) {
@@ -284,20 +284,9 @@ export const StudentListPEEditing = ({
     });
   }, [students, exam, profSubject.subject.sub]);
 
-  const filteredStudents =
-    profile.role === "Administrator"
-      ? students.filter((st) => st.class_div.division === classe)
-      : exam === "INT"
-        ? students.filter((st) => st.class_div.division === classe)
-        : students.filter((student) => {
-            const mark = student.marks.find(
-              (m) =>
-                m.exam.abbreviation === exam &&
-                m.subject.sub === profSubject.subject.sub,
-            );
-
-            return student.class_div.division === classe && mark && mark.score;
-          });
+  const filteredStudents = students.filter(
+    (student) => student.class_div?.division === classe,
+  );
 
   const handleAbsentChange = (studentId, checked) => {
     setEditedMarks((prev) => ({
@@ -413,8 +402,6 @@ export const StudentListPEEditing = ({
             {filteredStudents.map((student) => {
               const current = editedMarks[student.id];
 
-              if (!current) return null;
-
               return (
                 <TableRow key={student.id}>
                   <TableCell align="center">{student.roll_no}</TableCell>
@@ -425,7 +412,8 @@ export const StudentListPEEditing = ({
 
                   <TableCell>
                     <Checkbox
-                      checked={current.score === 500}
+                      checked={current?.score === 500}
+                      disabled={!current}
                       onChange={(e) =>
                         handleAbsentChange(student.id, e.target.checked)
                       }
@@ -439,38 +427,36 @@ export const StudentListPEEditing = ({
                       slotProps={{ htmlInput: { inputMode: "decimal" } }}
                       max={20}
                       placeholder={
-                        current.score == "1000"
+                        !current
+                          ? "No mark record"
+                          : current.score == "1000"
                           ? "Enter"
                           : current.score == "500"
                             ? "Absent"
                             : ""
                       }
                       value={
-                        current.score === 500
+                        current?.score === 500
                           ? "Absent"
-                          : current.score === 1000
+                          : current?.score === 1000
                             ? ""
-                            : current.score === -1000
+                            : current?.score === -1000
                               ? ""
-                              : current.score
+                              : current?.score ?? ""
                       }
                       error={
-                        current.score &&
+                        current?.score &&
                         ((current.score > maxMarks &&
                           !["500", "1000"].includes(current.score)) ||
                           isNaN(Number(current.score)))
                       }
                       sx={
-                        current.score > maxMarks &&
+                        current?.score > maxMarks &&
                         !["500", "1000"].includes(current.score)
                           ? { color: "red" }
                           : {}
                       }
-                      disabled={
-                        editing
-                          ? current.score === 500
-                          : !["1000", "-1000"].includes(current.score)
-                      }
+                      disabled={!current || (editing && current.score === 500)}
                       onChange={(e) =>
                         handleMarkChange(student.id, e.target.value)
                       }

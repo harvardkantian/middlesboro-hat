@@ -14,6 +14,7 @@ const Home = () => {
   const classe = useSelector((state) => state.class);
   const role = useSelector((state) => state.profile?.role);
   const subject = useSelector((state) => state.subject?.subject?.subject?.sub);
+  const peSubjects = ["PE", "Yoga", "NSS", "MA", "Art", "Music", "ATL", "WE", "Comp"];
   const [params] = useSearchParams();
   const navigate = useNavigate();
   useEffect(() => {
@@ -34,6 +35,8 @@ const Home = () => {
       {console.log(subject, "shtika")}
       {role == "Administrator" || subject == "ALL" ? (
         <StudentListConsolidated />
+      ) : peSubjects.includes(subject) ? (
+        <StudentListPE />
       ) : (
         <StudentList />
       )}

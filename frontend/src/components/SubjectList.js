@@ -888,8 +888,13 @@ const SubjectList = () => {
         ? overrideScore
         : editedScore !== undefined ? editedScore : mark?.score;
       if (score === undefined || score === null || score === "") return "";
-      if (typeof score === "number" && score >= 0) scoreById.set(student.id, score);
-      else if (score !== -1000 && score !== 1000 && score !== 500) return "";
+      const numericScore = Number(score);
+      if ([500, 1000, 5000, -1000].includes(numericScore)) continue;
+      if (Number.isFinite(numericScore) && numericScore >= 0) {
+        scoreById.set(student.id, numericScore);
+      } else {
+        return "";
+      }
     }
     const ranked = [...scoreById.entries()].sort((a, b) => b[1] - a[1]);
     const rank = ranked.findIndex(([id]) => id === studentId);

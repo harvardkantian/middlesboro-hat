@@ -56,7 +56,6 @@ export const getCoScholasticGrade = (average) => {
   return "E";
 };
 
-
 export const StudentListConsolidatedPT_ = ({
   students,
   exam,
@@ -528,24 +527,26 @@ export const StudentConsolidatedMT = ({ students, exam, class: classe }) => {
   const getCohortGrade = (student, subject) => {
     const gradeLevel = student.class_div?.grade;
     if (gradeLevel === undefined || gradeLevel === null) return "—";
-    const cohort = students.filter(
-      (candidate) => {
-        if (String(candidate.class_div?.grade) !== String(gradeLevel)) return false;
-        if (Number(gradeLevel) !== 10) return true;
-        return ["A", "B", "C"].includes(
-          String(candidate.class_div?.division).trim().toUpperCase(),
-        );
-      },
-    );
+    const cohort = students.filter((candidate) => {
+      if (String(candidate.class_div?.grade) !== String(gradeLevel))
+        return false;
+      if (Number(gradeLevel) !== 10) return true;
+      return ["A", "B", "C"].includes(
+        String(candidate.class_div?.division).trim().toUpperCase(),
+      );
+    });
     const ranked = [];
 
     for (const candidate of cohort) {
       const score = getScore(candidate, subject);
       if (score === undefined || score === null || score === "") return "—";
       const numericScore = Number(score);
+      if ([500, 1000, 5000, -1000].includes(numericScore)) {
+        continue;
+      }
       if (Number.isFinite(numericScore) && numericScore >= 0) {
         ranked.push({ id: candidate.id, score: numericScore });
-      } else if (![500, 1000, -1000].includes(numericScore)) {
+      } else {
         return "—";
       }
     }
@@ -561,6 +562,7 @@ export const StudentConsolidatedMT = ({ students, exam, class: classe }) => {
   };
   const printableScore = (score, max = 5) => {
     if (score === undefined || score === null || score === "") return "—";
+    if (Number(score) === 5000) return "✅";
     if (Number(score) === 1000) return "✅";
     if (Number(score) === -1000) return "N/A";
     if (Number(score) === 500) return "ab";
@@ -568,6 +570,7 @@ export const StudentConsolidatedMT = ({ students, exam, class: classe }) => {
   };
   const rawScore = (score) => {
     if (score === undefined || score === null || score === "") return "—";
+    if (Number(score) === 5000) return "✅";
     if (Number(score) === 1000) return "✅";
     if (Number(score) === -1000) return "N/A";
     if (Number(score) === 500) return "ab";
@@ -586,7 +589,9 @@ export const StudentConsolidatedMT = ({ students, exam, class: classe }) => {
       .map((subject) => Number(getCoScholasticScore(student, subject)))
       .filter((score) => Number.isFinite(score) && score >= 0 && score <= 5);
     return scores.length
-      ? (scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(2)
+      ? (scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(
+          2,
+        )
       : "—";
   };
 
@@ -634,8 +639,8 @@ export const StudentConsolidatedMT = ({ students, exam, class: classe }) => {
                     {subject}/5
                   </TableCell>
                 )),
-                  <TableCell key={`${title}-average`} align="center">
-                    Grade
+                <TableCell key={`${title}-average`} align="center">
+                  Grade
                 </TableCell>,
               ])}
             </TableRow>
@@ -657,7 +662,7 @@ export const StudentConsolidatedMT = ({ students, exam, class: classe }) => {
                       numericScore <= max;
                     const lowMark = isBelowOneThird(score, max);
                     const percentage = hasNumericScore
-                      ? ((numericScore * 100) / max).toFixed(1)
+                      ? ((numericScore * 100) / max)
                       : printableScore(score, max);
                     return [
                       <TableCell
@@ -672,7 +677,9 @@ export const StudentConsolidatedMT = ({ students, exam, class: classe }) => {
                         align="center"
                         sx={{ color: lowMark ? "error.main" : "inherit" }}
                       >
-                        {percentage}
+                        {isNaN(Number(percentage))
+                          ? percentage
+                          : Math.round(percentage)}
                       </TableCell>,
                       <TableCell
                         key={`${subject}-grade`}
@@ -709,9 +716,9 @@ export const StudentConsolidatedMT = ({ students, exam, class: classe }) => {
                           : "inherit",
                       }}
                     >
-                    {average(student, subjects) === "—"
-                      ? "—"
-                      : getCoScholasticGrade(average(student, subjects))}
+                      {average(student, subjects) === "—"
+                        ? "—"
+                        : getCoScholasticGrade(average(student, subjects))}
                     </TableCell>,
                   ])}
                 </TableRow>
@@ -744,6 +751,11 @@ const StudentListAcademicViewing = ({
     ? 20
     : subjectMaxMarks[profSubject] || 80;
   const passMarks = Math.ceil(maxMarks / 3);
+  const getStudentMark = (student) => student.marks?.find(
+    (mark) =>
+      mark.exam?.abbreviation === exam &&
+      mark.subject?.sub === profSubject.subject.sub,
+  );
 
   const navigate = useNavigate();
   const [openSubjectModal, setOpenSubjectModal] = useState(false);
@@ -799,29 +811,23 @@ const StudentListAcademicViewing = ({
                   ? students.filter(
                       (student) => student.class_div.division == classe,
                     )
-                  : students.filter(
-                      (student) =>
-                        student.class_div.division == classe &&
-                        student.marks.filter(
-                          (mark) =>
-                            mark.exam.abbreviation == exam &&
-                            mark.subject.sub == profSubject.subject.sub,
-                        )[0].score != -1000,
-                    )) &&
+                  : students.filter((student) => {
+                      const mark = getStudentMark(student);
+                      return student.class_div.division == classe &&
+                        mark && mark.score != -1000;
+                    })) &&
                 (exam == "INT"
                   ? students.filter(
                       (student) => student.class_div.division == classe,
                     )
-                  : students.filter(
-                      (student) =>
-                        student.class_div.division == classe &&
-                        student.marks.filter(
-                          (mark) =>
-                            mark.exam.abbreviation == exam &&
-                            mark.subject.sub == profSubject.subject.sub,
-                        )[0].score != -1000,
-                    ))
-            ).map((student) => (
+                  : students.filter((student) => {
+                      const mark = getStudentMark(student);
+                      return student.class_div.division == classe &&
+                        mark && mark.score != -1000;
+                    }))
+            ).map((student) => {
+              const mark = getStudentMark(student);
+              return (
               <TableRow
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
@@ -834,53 +840,30 @@ const StudentListAcademicViewing = ({
                     sx={{
                       fontFamily: "Geist Mono, monospace !important",
                       color:
-                        student.marks.filter(
-                          (mark) =>
-                            mark.exam.abbreviation == exam &&
-                            mark.subject.sub == profSubject.subject.sub,
-                        )[0].score < passMarks
+                      mark?.score < passMarks
                           ? "red"
                           : "black",
                     }}
                   >
                     {/* {console.log("Shacri", exam)}0 */}
                     {exam != "INT" &&
-                      student.marks.filter(
-                        (mark) =>
-                          mark.exam.abbreviation == exam &&
-                          mark.subject.sub == profSubject.subject.sub,
-                      )[0].score < 10 && (
+                      mark?.score < 10 && (
                         <span style={{ visibility: "hidden" }}>{"a"}</span>
                       )}
                     {exam == "INT"
                       ? 0
-                      : student.marks.filter(
-                            (mark) =>
-                              mark.exam.abbreviation == exam &&
-                              mark.subject.sub == profSubject.subject.sub,
-                          )[0].score == "1000"
+                      : mark?.score == "1000"
                         ? "✅"
-                        : student.marks.filter(
-                              (mark) =>
-                                mark.exam.abbreviation == exam &&
-                                mark.subject.sub == profSubject.subject.sub,
-                            )[0].score == -1000
+                        : mark?.score == -1000
                           ? "N/A"
-                          : student.marks.filter(
-                                (mark) =>
-                                  mark.exam.abbreviation == exam &&
-                                  mark.subject.sub == profSubject.subject.sub,
-                              )[0].score == 500
+                          : mark?.score == 500
                             ? "ab"
-                            : student.marks.filter(
-                                (mark) =>
-                                  mark.exam.abbreviation == exam &&
-                                  mark.subject.sub == profSubject.subject.sub,
-                              )[0].score}
+                            : mark?.score}
                   </TableCell>
                 )}
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
@@ -1174,7 +1157,7 @@ const StudentListViewing = ({
   handleSubmit,
 }) => {
   const profSubject = useSelector((state) => state);
-  console.log("Bonjour Saulut Coment cava", profSubject)
+  console.log("Bonjour Saulut Coment cava", profSubject);
   if (
     ["PE", "Yoga", "NSS", "MA", "ATL", "WE", "Comp"].includes(
       profSubject.subject.sub,

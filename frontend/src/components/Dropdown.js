@@ -47,7 +47,7 @@ const Dropdown = () => {
       mapsubs.includes("ATL") ||
       mapsubs.includes("Comp")
     ) {
-      setExam("SE");
+      setExam("SP");
     }
   }, [profile]);
   const subjects = [
@@ -184,7 +184,6 @@ const Dropdown = () => {
             <MenuItem value={"PB1"}>Pre-Board 1</MenuItem>
             <MenuItem value={"PB2"}>Pre-Board 2</MenuItem>
             <MenuItem value={"SP"}>Sports Evaluation</MenuItem>
-            <MenuItem value={"SE"}>Skill Evaluation</MenuItem>
           </Select>
         </FormControl>
         {profile.role != "Administrator" && (
