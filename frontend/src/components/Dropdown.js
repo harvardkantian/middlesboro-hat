@@ -5,7 +5,7 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import UploadModal from "./UploadModal";
 import * as XLSX from "xlsx";
 import { useRequest } from "../hooks/useRequest";
@@ -25,11 +25,22 @@ const Dropdown = () => {
   const { request, isLoading, error } = useRequest();
   const [data, setData] = useState([]);
   const inputref = useRef();
-  const classes = profile.subjects.flatMap((item) =>
-    item.classes.map((cls) => `${cls.grade}${cls.division}`),
-  );
+  const classOptions = useMemo(() => {
+    const options = profile?.role === "Administrator"
+      ? ["A", "B", "C"].map((division) => ({
+          value: division,
+          label: `10${division}`,
+        }))
+      : (profile?.subjects || []).flatMap((item) =>
+          (item.classes || []).map((cls) => ({
+            value: cls.division,
+            label: `${cls.grade}${cls.division}`,
+          })),
+        );
+    return [...new Map(options.map((option) => [option.value, option])).values()];
+  }, [profile]);
+  const classOptionsKey = classOptions.map((option) => option.value).join(",");
 
-  console.log(classes);
   useEffect(() => {
     if (!profile) return;
     const mapsubs = (profile?.subjects || [null]).map((sub) => sub.subject.sub);
@@ -64,15 +75,43 @@ const Dropdown = () => {
     "IT",
   ];
   const classValue = useSelector((store) => store.class);
-  const filteredSubjects =
-    profile?.subjects?.filter((sub) =>
+  const selectedClassIsAvailable = classOptions.some(
+    (option) => option.value === classValue,
+  );
+  useEffect(() => {
+    if (!classOptions.length) {
+      if (classValue !== "") setClass("");
+      return;
+    }
+    if (!selectedClassIsAvailable || classOptions.length === 1) {
+      setClass(classOptions[0].value);
+    }
+  }, [classOptionsKey, classValue, selectedClassIsAvailable]);
+
+  const filteredSubjects = useMemo(
+    () => (profile?.subjects || []).filter((sub) =>
       sub.classes?.some((cls) => cls.division === classValue),
-    ) || [];
+    ),
+    [profile, classValue],
+  );
   const canSelectAll =
     profile?.class_tr?.division?.toUpperCase() === classValue?.toUpperCase();
+  const allSubjectOption = { subject: { sub: "ALL" } };
+  const subjectOptions = canSelectAll
+    ? [allSubjectOption, ...filteredSubjects]
+    : filteredSubjects;
+  const subjectIsAvailable = subjectOptions.some(
+    (option) => JSON.stringify(option) === JSON.stringify(subject),
+  );
   useEffect(() => {
-    setSubject(filteredSubjects[0]);
-  }, [JSON.stringify(filteredSubjects), canSelectAll]);
+    if (!subjectOptions.length) {
+      if (subject != null) setSubject(null);
+      return;
+    }
+    if (!subjectIsAvailable || subjectOptions.length === 1) {
+      setSubject(subjectOptions[0]);
+    }
+  }, [JSON.stringify(subjectOptions), JSON.stringify(subject), subjectIsAvailable]);
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -140,33 +179,18 @@ const Dropdown = () => {
           <InputLabel id="demo-simple-select-label">Class</InputLabel>
           {console.log(classValue, "ab")}
           <Select
-            defaultValue={"A"}
-            value={classValue}
+            value={selectedClassIsAvailable ? classValue : ""}
             label="Class"
             onChange={(e) => {
               console.log("NEW CLASS", e.target.value);
               setClass(e.target.value);
             }}
           >
-            {profile.role == "Administrator"
-              ? [
-                  ["A", "10A"],
-                  ["B", "10B"],
-                  ["C", "10C"],
-                ].map(([val, data]) => <MenuItem value={val}>{data}</MenuItem>)
-              : [
-                  ["A", "10A"],
-                  ["B", "10B"],
-                  ["C", "10C"],
-                ]
-                  .filter(([val, data]) =>
-                    profile.role == "Administrator"
-                      ? true
-                      : classes.includes(data),
-                  )
-                  .map(([val, data]) => (
-                    <MenuItem value={val}>{data}</MenuItem>
-                  ))}
+            {classOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
         <FormControl sx={{ right: 0 }}>
@@ -191,22 +215,14 @@ const Dropdown = () => {
             <InputLabel id="demo-simple-select-label">Subject</InputLabel>
             {console.log(subject, "aku aku")}
             <Select
-              value={JSON.stringify(subject)}
+              value={subjectIsAvailable ? JSON.stringify(subject) : ""}
               label="Subject"
               onChange={(e) => setSubject(JSON.parse(e.target.value))}
             >
               {canSelectAll && (
-                <MenuItem value={JSON.stringify({ subject: { sub: "ALL" } })}>
+                <MenuItem value={JSON.stringify(allSubjectOption)}>
                   ALL
                 </MenuItem>
-              )}
-              {console.log(
-                profile?.subjects,
-                classValue,
-                profile?.subjects.map((sub) =>
-                  sub.classes.some((a) => a.division == classValue),
-                ),
-                997,
               )}
               {filteredSubjects.map((sub) => (
                 <MenuItem value={JSON.stringify(sub)}>

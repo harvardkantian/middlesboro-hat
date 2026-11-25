@@ -476,7 +476,7 @@ export const StudentListPEEditing = ({
   );
 };
 
-const StudentListPE = () => {
+const StudentListPE = ({ refreshKey = 0 }) => {
   const [students, setStudents] = useState([]);
   const { request, isLoading, error } = useRequest();
   const exam = useSelector((state) => state.exam.exam);
@@ -507,7 +507,7 @@ const StudentListPE = () => {
       // }
       setStudents(studentData);
     })();
-  }, [exam, profile]);
+  }, [exam, profile, refreshKey]);
 
   const [editing, setEditing] = useState(false);
   useEffect(() => {

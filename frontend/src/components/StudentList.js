@@ -1245,7 +1245,7 @@ const StudentListEditing = ({
     );
 };
 
-const StudentList = () => {
+const StudentList = ({ refreshKey = 0 }) => {
   const [students, setStudents] = useState([]);
   const { request, isLoading, error } = useRequest();
   const exam = useSelector((state) => state.exam.exam);
@@ -1276,7 +1276,7 @@ const StudentList = () => {
       // }
       setStudents(studentData);
     })();
-  }, [exam, profile]);
+  }, [exam, profile, refreshKey]);
 
   const [editing, setEditing] = useState(false);
   useEffect(() => {
@@ -1319,7 +1319,7 @@ const StudentList = () => {
   //   );
 };
 
-export const StudentListConsolidated = () => {
+export const StudentListConsolidated = ({ refreshKey = 0 }) => {
   const [students, setStudents] = useState([]);
   const { request, isLoading, error } = useRequest();
   const exam = useSelector((state) => state.exam.exam);
@@ -1350,7 +1350,7 @@ export const StudentListConsolidated = () => {
       // }
       setStudents(studentData);
     })();
-  }, [exam, profile]);
+  }, [exam, profile, refreshKey]);
 
   const [editing, setEditing] = useState(false);
   useEffect(() => {
