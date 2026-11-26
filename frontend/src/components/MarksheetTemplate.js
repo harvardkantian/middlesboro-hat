@@ -23,8 +23,9 @@ const subjectMaxMarks = {
   HS: 70, Painting: 30, HC: 50, AI: 50, IT: 50,
 };
 const coScholasticGroups = [
-  { title: "Activities", subjects: ["PE", "Yoga", "NSS", "MA"] },
-  { title: "Skills", subjects: ["WE", "ATL", "Comp"] },
+  { title: "Health and Physical Education", subjects: ["PE", "Yoga", "NSS", "MA"] },
+  { title: "Work Experience", subjects: ["WE", "ATL", "Comp"] },
+  {title:"Art Education", subjects: ["Art", "Music", 'SD']}
 ];
 
 const formatMark = (score) => {
