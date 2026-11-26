@@ -533,7 +533,7 @@ export const StudentConsolidatedMT = ({
     { subject: "IT", max: 50 },
   ];
   const groupedSubjects = [
-    { title: "Activities", subjects: ["PE", "Yoga", "NSS", "NCC", "MA"] },
+    { title: "Activities", subjects: ["PE", "Yoga", "NSS", "MA"] },
     { title: "Skills", subjects: ["WE", "ATL", "Comp"] },
   ];
   const getScore = (student, subject) =>

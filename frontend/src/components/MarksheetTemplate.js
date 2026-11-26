@@ -23,7 +23,7 @@ const subjectMaxMarks = {
   HS: 70, Painting: 30, HC: 50, AI: 50, IT: 50,
 };
 const coScholasticGroups = [
-  { title: "Activities", subjects: ["PE", "Yoga", "NSS", "NCC", "MA"] },
+  { title: "Activities", subjects: ["PE", "Yoga", "NSS", "MA"] },
   { title: "Skills", subjects: ["WE", "ATL", "Comp"] },
 ];
 
